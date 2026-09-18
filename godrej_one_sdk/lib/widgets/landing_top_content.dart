@@ -1,16 +1,25 @@
 import 'package:flutter/material.dart';
 
-const _activeRing = Color(0xFF8DFC63);
+import 'package:godrej_one_sdk/service/user_name_onboarding_handler.dart';
+import 'package:godrej_one_sdk/widgets/home_camera_widgets.dart';
+import 'package:godrej_one_sdk/widgets/user_circle_avatar_onboarding.dart';
+
 const _glassFill = Color(0xFFE4EAF6);
 
-class LandingTopContent extends StatefulWidget {
-  const LandingTopContent({super.key});
+class LandingTopContent extends StatelessWidget {
+  const LandingTopContent({
+    super.key,
+    required this.users,
+    required this.selectedIndex,
+    required this.onSelect,
+    required this.avatarKeys,
+  });
 
-  @override
-  State<LandingTopContent> createState() => _LandingTopContentState();
-}
+  final List<OnboardingUser> users;
+  final int selectedIndex;
+  final ValueChanged<int> onSelect;
+  final List<GlobalKey> avatarKeys;
 
-class _LandingTopContentState extends State<LandingTopContent> {
   @override
   Widget build(BuildContext context) {
     return Padding(
@@ -51,79 +60,22 @@ class _LandingTopContentState extends State<LandingTopContent> {
                   ],
                 ),
               ),
-              Column(
-                children: [
-                  GestureDetector(
-                    onTap: () {
-                      // Handle notification icon tap
-                    },
-                    child: Image.asset(
-                      'images/home_landing_icon.png',
-                      package: 'godrej_one_sdk',
-                      width: 34,
-                      height: 34,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  GestureDetector(
-                    onTap: () {},
-                    child: Image.asset(
-                      'images/camera_landing_icon.png',
-                      package: 'godrej_one_sdk',
-                      width: 34,
-                      height: 34,
-                    ),
-                  ),
-                ],
-              ),
+              HomeCameraWidgets(status: 0,),
             ],
           ),
           const SizedBox(height: 7),
           Row(
             children: [
-              const Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  CircleAvatar(
-                    radius: 17,
-                    backgroundImage: AssetImage(
-                      'images/pfp1.png',
-                      package: 'godrej_one_sdk',
-                    ),
-                  ),
-                  Positioned.fill(
-                    left: -1,
-                    top: -1,
-                    right: -1,
-                    bottom: -1,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        border: Border.fromBorderSide(
-                          BorderSide(color: _activeRing, width: 2),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              const CircleAvatar(
-                radius: 17,
-                backgroundImage: AssetImage(
-                  'images/pfp2.png',
-                  package: 'godrej_one_sdk',
+              for (var i = 0; i < users.length; i++) ...[
+                UserCircleAvatarOnboarding(
+                  key: avatarKeys[i],
+                  name: users[i].name,
+                  image: AssetImage(users[i].image, package: 'godrej_one_sdk'),
+                  selected: i == selectedIndex,
+                  onTap: () => onSelect(i),
                 ),
-              ),
-              const SizedBox(width: 8),
-              const CircleAvatar(
-                radius: 17,
-                backgroundImage: AssetImage(
-                  'images/pfp3.png',
-                  package: 'godrej_one_sdk',
-                ),
-              ),
-              const SizedBox(width: 8),
+                const SizedBox(width: 8),
+              ],
               Container(
                 width: 34,
                 height: 34,
