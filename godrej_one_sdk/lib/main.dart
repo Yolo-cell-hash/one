@@ -5,7 +5,7 @@ import 'package:godrej_one_sdk/screens/splash_screen.dart';
 
 void main() => runApp(const MyApp());
 
-Widget returnMainApp(){
+Widget returnMainApp() {
   return MyApp();
 }
 
@@ -19,12 +19,10 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home:SplashScreen()
-    );
+    return MaterialApp(home: SplashScreen());
   }
 }
 
-Widget myApp(){
+Widget myApp() {
   return MyApp();
 }

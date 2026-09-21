@@ -4,7 +4,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
-import 'package:godrej_one_sdk/screens/home_screen.dart';
+import 'package:godrej_one_sdk/screens/home_shell.dart';
 import 'package:godrej_one_sdk/service/user_name_onboarding_handler.dart';
 import 'package:godrej_one_sdk/widgets/landing_top_content.dart';
 import 'package:godrej_one_sdk/widgets/landing_unlock_slider.dart';
@@ -87,15 +87,30 @@ class _LandingPageState extends State<LandingPage>
     });
   }
 
-  void _openHome() {
-    Navigator.of(context).pushReplacement(
+  void _openHome() async {
+    if (!mounted) return;
+
+    final launchedIndex = _selected; // preserve chosen user
+
+    await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 600),
-        pageBuilder: (_, _, _) => HomeScreen(name: _users[_selected].name, asset:  _users[_selected].image),
+        pageBuilder: (_, _, _) => HomeShell(
+          name: _users[launchedIndex].name,
+          asset: _users[launchedIndex].image,
+        ),
         transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),
     );
+
+    setState(() {
+      _timer?.cancel();
+      _timer = null;
+      _launch.reset();
+      _flightStart = null;
+      //
+    });
   }
 
   @override

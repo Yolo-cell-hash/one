@@ -27,10 +27,7 @@ class _SplashScreenState extends State<SplashScreen> {
       childWidget: SizedBox(
         height: 200,
         width: 200,
-        child: Image.asset(
-          "images/godrej_logo.png",
-          package: "godrej_one_sdk",
-        ),
+        child: Image.asset("images/godrej_logo.png", package: "godrej_one_sdk"),
       ),
       onAnimationEnd: () => debugPrint("On Fade In End"),
       nextScreen: const LandingPage(),

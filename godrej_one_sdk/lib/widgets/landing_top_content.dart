@@ -60,7 +60,7 @@ class LandingTopContent extends StatelessWidget {
                   ],
                 ),
               ),
-              HomeCameraWidgets(status: 0,),
+              HomeCameraWidgets(status: 0),
             ],
           ),
           const SizedBox(height: 7),

@@ -13,7 +13,7 @@ class HomeCameraWidgets extends StatefulWidget {
 class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
   @override
   Widget build(BuildContext context) {
-    if(widget.status==0){
+    if (widget.status == 0) {
       return Column(
         children: [
           GestureDetector(
@@ -37,7 +37,7 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
           ),
         ],
       );
-    }else {
+    } else {
       return Row(
         children: [
           GestureDetector(
@@ -62,6 +62,5 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
         ],
       );
     }
-
   }
 }
