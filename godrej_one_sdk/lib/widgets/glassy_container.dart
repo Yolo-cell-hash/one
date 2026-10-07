@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 const _brand = Color(0xFF810055);
 const _defaultBorder = Color(0xFF8DFC63);
 const _captionColor = Color(0xFF6B6B6B);
@@ -263,6 +265,7 @@ class GlassyContainer extends StatelessWidget {
     BottomBarItem item, {
     required bool selected,
     required double barIconSize,
+    required bool cupertino,
   }) {
     final size = item.size ?? bottomBarIconSize ?? barIconSize;
     final tint =
@@ -310,6 +313,21 @@ class GlassyContainer extends StatelessWidget {
       );
     }
 
+    if (cupertino) {
+      // A UITabBar item has no ripple and no long-press tooltip: the selection
+      // pill is the only feedback, and the label goes to VoiceOver.
+      return Semantics(
+        label: item.tooltip,
+        button: item.onTap != null,
+        selected: selected,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onTap: item.onTap,
+          child: child,
+        ),
+      );
+    }
+
     if (item.tooltip != null) {
       child = Tooltip(message: item.tooltip!, child: child);
     }
@@ -321,7 +339,8 @@ class GlassyContainer extends StatelessWidget {
     return child;
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(BuildContext context) {
+    final cupertino = isCupertino(context);
     final barHeight = height ?? 80;
     final iconSize = (barHeight * 0.32).clamp(20.0, 30.0);
 
@@ -340,6 +359,7 @@ class GlassyContainer extends StatelessWidget {
                       bottomBarItems[i],
                       selected: i == bottomBarSelectedIndex,
                       barIconSize: iconSize,
+                      cupertino: cupertino,
                     ),
                   ),
                 ),
@@ -554,7 +574,7 @@ class GlassyContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBottomBar = is_a_bottom_bar ?? isABottomBar;
 
-    if (isBottomBar) return _buildBottomBar();
+    if (isBottomBar) return _buildBottomBar(context);
 
     Widget card = SizedBox(
       height: height,

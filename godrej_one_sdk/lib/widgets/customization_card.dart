@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 class CustomizationCard extends StatefulWidget {
   const CustomizationCard({
     super.key,
@@ -97,7 +99,7 @@ class _CustomizationCardState extends State<CustomizationCard> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: Colors.grey,
+              color: secondaryControlFill(context),
               borderRadius: BorderRadius.circular(20.0),
             ),
             padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),

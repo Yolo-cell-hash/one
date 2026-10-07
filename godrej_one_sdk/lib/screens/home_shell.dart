@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/screens/activity_trails_screen.dart';
 import 'package:godrej_one_sdk/screens/add_devices_screen.dart';
 import 'package:godrej_one_sdk/screens/customize_screen.dart';
@@ -62,73 +63,80 @@ class _HomeShellState extends State<HomeShell> {
     final gap = (w * 0.035).clamp(12.0, 18.0);
     final barHeight = (w * 0.19).clamp(66.0, 84.0);
     final tabBackground = _tabBackgrounds[_index];
+    final cupertino = isCupertino(context);
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          if (tabBackground == null)
-            Image.asset(
-              'images/home_screen_bg.png',
-              package: 'godrej_one_sdk',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            )
-          else
-            ColoredBox(color: tabBackground),
-          IndexedStack(index: _index, children: _tabs),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(gutter, 0, gutter, gap * 0.5),
-                child: GlassyContainer(
-                  isABottomBar: true,
-                  height: barHeight,
-                  width: double.infinity,
-                  // The default hairline is white-on-white and disappears
-                  // over a solid tab background (e.g. Activity Trails) —
-                  // this dark, low-alpha border stays visible over both the
-                  // photo and a plain white page.
-                  borderExists: true,
-                  borderColor: Colors.black.withValues(alpha: 0.06),
-                  bottomBarSelectedIndex: _index,
-                  bottomBarItems: [
-                    BottomBarItem.icon(
-                      Icons.home_filled,
-                      tooltip: 'Home',
-                      onTap: () => _select(0),
-                    ),
-                    BottomBarItem.icon(
-                      Icons.access_time_filled,
-                      tooltip: 'Activity Trails',
-                      onTap: () => _select(1),
-                    ),
-                    BottomBarItem.icon(
-                      Icons.workspaces_filled,
-                      tooltip: 'Add Devices',
-                      onTap: () => _select(2),
-                    ),
-                    BottomBarItem.asset(
-                      'images/svgs/spaces.svg',
-                      tooltip: 'My Spaces',
-                      onTap: () => _select(3),
-                    ),
-                    BottomBarItem.icon(
-                      Icons.add,
-                      tooltip: 'Customize',
-                      onTap: () => _select(4),
-                    ),
-                  ],
+    return AdaptiveStatusBar(
+      lightContent: tabBackground == null,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        // An iOS tab bar stays put and is covered by the keyboard; it doesn't
+        // ride up above it.
+        resizeToAvoidBottomInset: !cupertino,
+        body: Stack(
+          children: [
+            if (tabBackground == null)
+              Image.asset(
+                'images/home_screen_bg.png',
+                package: 'godrej_one_sdk',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              )
+            else
+              ColoredBox(color: tabBackground),
+            IndexedStack(index: _index, children: _tabs),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(gutter, 0, gutter, gap * 0.5),
+                  child: GlassyContainer(
+                    isABottomBar: true,
+                    height: barHeight,
+                    width: double.infinity,
+                    // The default hairline is white-on-white and disappears
+                    // over a solid tab background (e.g. Activity Trails) —
+                    // this dark, low-alpha border stays visible over both the
+                    // photo and a plain white page.
+                    borderExists: true,
+                    borderColor: Colors.black.withValues(alpha: 0.06),
+                    bottomBarSelectedIndex: _index,
+                    bottomBarItems: [
+                      BottomBarItem.icon(
+                        AppIcons.home.of(context),
+                        tooltip: 'Home',
+                        onTap: () => _select(0),
+                      ),
+                      BottomBarItem.icon(
+                        AppIcons.activity.of(context),
+                        tooltip: 'Activity Trails',
+                        onTap: () => _select(1),
+                      ),
+                      BottomBarItem.icon(
+                        AppIcons.devices.of(context),
+                        tooltip: 'Add Devices',
+                        onTap: () => _select(2),
+                      ),
+                      BottomBarItem.asset(
+                        'images/svgs/spaces.svg',
+                        tooltip: 'My Spaces',
+                        onTap: () => _select(3),
+                      ),
+                      BottomBarItem.icon(
+                        AppIcons.add.of(context),
+                        tooltip: 'Customize',
+                        onTap: () => _select(4),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

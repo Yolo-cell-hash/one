@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/widgets/search_bar_widget.dart';
 
 /// Placeholder body for the "Activity Trails" tab.
@@ -40,13 +41,13 @@ class ActivityTrailsScreen extends StatelessWidget {
                   alignment: Alignment.centerRight,
                   child: Container(
                     decoration: BoxDecoration(
-                      color: Colors.grey,
+                      color: secondaryControlFill(context),
                       borderRadius: BorderRadius.circular(22.0),
                     ),
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Icon(
-                        Icons.more_vert_rounded,
+                        AppIcons.more.of(context),
                         size: 22,
                         color: _brand,
                       ),

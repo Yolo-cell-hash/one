@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 class ElevatedContainer extends StatefulWidget {
   const ElevatedContainer({super.key});
 
@@ -13,11 +15,16 @@ class _ElevatedContainerState extends State<ElevatedContainer> {
 
   @override
   Widget build(BuildContext context) {
+    // iOS draws grouped content as a flat, filled panel; Material lifts it
+    // with an elevation shadow.
+    final cupertino = isCupertino(context);
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Material(
-        elevation: 5,
-        color: Colors.white,
+        elevation: cupertino ? 0 : 5,
+        color: cupertino
+            ? CupertinoColors.secondarySystemBackground.resolveFrom(context)
+            : Colors.white,
         shadowColor: Colors.black26,
         borderRadius: BorderRadius.circular(12),
         child: Container(

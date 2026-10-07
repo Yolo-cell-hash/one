@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/widgets/coming_soon_body.dart';
 
 /// Placeholder body for the "My Spaces" tab.
@@ -8,9 +9,9 @@ class MySpacesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ComingSoonBody(
+    return ComingSoonBody(
       title: 'My Spaces',
-      icon: Icons.space_dashboard_outlined,
+      icon: AppIcons.spaces.of(context),
       message: 'Group your devices by room, floor or however you like.',
     );
   }

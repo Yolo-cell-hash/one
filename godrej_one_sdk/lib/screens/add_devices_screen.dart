@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/widgets/coming_soon_body.dart';
 
 /// Placeholder body for the "Add Devices" tab.
@@ -8,9 +9,9 @@ class AddDevicesScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const ComingSoonBody(
+    return ComingSoonBody(
       title: 'Add Devices',
-      icon: Icons.workspaces_filled,
+      icon: AppIcons.devices.of(context),
       message: 'Pair a new device to your home in a few taps.',
     );
   }
