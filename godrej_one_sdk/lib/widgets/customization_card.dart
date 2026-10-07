@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
 
 class CustomizationCard extends StatefulWidget {
@@ -56,7 +57,11 @@ class _CustomizationCardState extends State<CustomizationCard> {
         );
       }
     } else if (widget.card_icon != null && widget.hasIcon) {
-      leading = Icon(widget.card_icon, color: _brand, size: 24.0);
+      leading = Icon(
+        adaptiveIcon(context, widget.card_icon!),
+        color: _brand,
+        size: 24.0,
+      );
     } else {
       leading = const SizedBox(width: 24.0, height: 24.0);
     }
@@ -109,7 +114,9 @@ class _CustomizationCardState extends State<CustomizationCard> {
           ),
           Container(
             decoration: BoxDecoration(
-              color: isAdded ? _brand.withValues(alpha: 0.12) : Colors.grey,
+              color: isAdded
+                  ? _brand.withValues(alpha: 0.12)
+                  : secondaryControlFill(context),
               borderRadius: BorderRadius.circular(20.0),
             ),
             padding: const EdgeInsets.symmetric(
@@ -121,7 +128,11 @@ class _CustomizationCardState extends State<CustomizationCard> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 if (isAdded) ...[
-                  const Icon(Icons.check, size: 16, color: _brand),
+                  Icon(
+                    adaptiveIcon(context, Icons.check),
+                    size: 16,
+                    color: _brand,
+                  ),
                   const SizedBox(width: 6),
                 ],
                 Text(

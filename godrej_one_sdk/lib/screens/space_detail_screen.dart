@@ -1,6 +1,8 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 import 'package:godrej_one_sdk/models/space.dart';
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 import 'package:godrej_one_sdk/widgets/device_control_panel.dart';
 import 'package:godrej_one_sdk/widgets/glassy_container.dart';
@@ -136,7 +138,13 @@ class _SpaceDetailScreenState extends State<SpaceDetailScreen> {
                             showElegantToast(context, 'Cameras coming soon'),
                       ),
                       const SizedBox(width: 14),
-                      _HeaderButton(image: 'images/chevron.png', onTap: () {}),
+                      _HeaderButton(
+                        image: 'images/chevron.png',
+                        // Android's vertical overflow dots on a round disc; a
+                        // quarter turn gives iOS its horizontal ellipsis.
+                        quarterTurns: isCupertino(context) ? 1 : 0,
+                        onTap: () {},
+                      ),
                     ],
                   ),
                 ),
@@ -272,20 +280,28 @@ class _SpaceDetailScreenState extends State<SpaceDetailScreen> {
 }
 
 class _HeaderButton extends StatelessWidget {
-  const _HeaderButton({required this.image, required this.onTap});
+  const _HeaderButton({
+    required this.image,
+    required this.onTap,
+    this.quarterTurns = 0,
+  });
 
   final String image;
   final VoidCallback onTap;
+  final int quarterTurns;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
-      child: Image.asset(
-        image,
-        package: 'godrej_one_sdk',
-        width: 34,
-        height: 34,
+      child: RotatedBox(
+        quarterTurns: quarterTurns,
+        child: Image.asset(
+          image,
+          package: 'godrej_one_sdk',
+          width: 34,
+          height: 34,
+        ),
       ),
     );
   }
@@ -303,7 +319,9 @@ class _AddDeviceCard extends StatelessWidget {
       height: height,
       padding: EdgeInsets.zero,
       onTap: () => showElegantToast(context, 'Adding devices coming soon'),
-      child: const Center(child: Icon(Icons.add, size: 30, color: _brand)),
+      child: Center(
+        child: Icon(adaptiveIcon(context, Icons.add), size: 30, color: _brand),
+      ),
     );
   }
 }
@@ -359,7 +377,7 @@ class _DeviceCard extends StatelessWidget {
               right: 14,
               bottom: 14,
               child: Icon(
-                device.icon,
+                adaptiveIcon(context, device.icon!),
                 size: 38,
                 color: _brand.withValues(alpha: isOn ? 1 : 0.4),
               ),
@@ -411,6 +429,11 @@ class _SpaceToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // The system switch on iOS; its green "on" track matches the app's
+    // "active = green" language.
+    if (isCupertino(context)) {
+      return CupertinoSwitch(value: value, onChanged: onChanged);
+    }
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(

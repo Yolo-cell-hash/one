@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 const _brand = Color(0xFF810055);
 const _defaultBorder = Color(0xFF8DFC63);
 const _captionColor = Color(0xFF6B6B6B);
@@ -269,6 +271,7 @@ class GlassyContainer extends StatelessWidget {
     BottomBarItem item, {
     required bool selected,
     required double barIconSize,
+    required bool cupertino,
   }) {
     final size = item.size ?? bottomBarIconSize ?? barIconSize;
     final tint =
@@ -316,14 +319,19 @@ class GlassyContainer extends StatelessWidget {
       );
     }
 
+    // A UITabBar item has no long-press tooltip; on iOS the label only goes
+    // to VoiceOver.
     if (item.tooltip != null) {
-      child = Tooltip(message: item.tooltip!, child: child);
+      child = cupertino
+          ? Semantics(label: item.tooltip, child: child)
+          : Tooltip(message: item.tooltip!, child: child);
     }
 
     return child;
   }
 
-  Widget _buildBottomBar() {
+  Widget _buildBottomBar(BuildContext context) {
+    final cupertino = isCupertino(context);
     final barHeight = height ?? 80;
     final iconSize = (barHeight * 0.32).clamp(20.0, 30.0);
 
@@ -350,6 +358,7 @@ class GlassyContainer extends StatelessWidget {
                           bottomBarItems[i],
                           selected: i == bottomBarSelectedIndex,
                           barIconSize: iconSize,
+                          cupertino: cupertino,
                         ),
                       ),
                     ),
@@ -399,7 +408,7 @@ class GlassyContainer extends StatelessWidget {
 
   // ------------------------------------------------------------------ content
 
-  Widget _textColumn(double s, {required bool bounded}) {
+  Widget _textColumn(BuildContext context, double s, {required bool bounded}) {
     final effectiveSubtitleColor = subtitleColor ?? subtitle_color ?? color;
     final hasValueBlock =
         subtitle != null || caption != null || statusDotColor != null;
@@ -423,7 +432,7 @@ class GlassyContainer extends StatelessWidget {
             children: [
               if (subtitleIcon != null) ...[
                 Icon(
-                  subtitleIcon,
+                  adaptiveIcon(context, subtitleIcon!),
                   size: (s * 0.046).clamp(15.0, 21.0),
                   color: subtitleIconColor ?? effectiveSubtitleColor,
                 ),
@@ -518,7 +527,7 @@ class GlassyContainer extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: _contentPadding(screenWidth),
-              child: _textColumn(screenWidth, bounded: bounded),
+              child: _textColumn(context, screenWidth, bounded: bounded),
             ),
           ),
           SizedBox(width: w * mediaWidthFactor, child: _mediaPanel(w)),
@@ -556,7 +565,7 @@ class GlassyContainer extends StatelessWidget {
           ),
         Padding(
           padding: _contentPadding(screenWidth),
-          child: _textColumn(screenWidth, bounded: bounded),
+          child: _textColumn(context, screenWidth, bounded: bounded),
         ),
       ],
     );
@@ -566,7 +575,7 @@ class GlassyContainer extends StatelessWidget {
   Widget build(BuildContext context) {
     final isBottomBar = is_a_bottom_bar ?? isABottomBar;
 
-    if (isBottomBar) return _buildBottomBar();
+    if (isBottomBar) return _buildBottomBar(context);
 
     Widget card = SizedBox(
       height: height,

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/widgets/glassy_container.dart';
 
 const _brand = Color(0xFF810055);
@@ -50,7 +51,12 @@ class _HoldToUnlockState extends State<HoldToUnlock>
 
   void _onHoldStatus(AnimationStatus status) {
     if (status != AnimationStatus.completed || _unlocked) return;
-    HapticFeedback.heavyImpact();
+    // iOS has a system "success" haptic for exactly this moment.
+    if (isCupertino(context)) {
+      HapticFeedback.successNotification();
+    } else {
+      HapticFeedback.heavyImpact();
+    }
     setState(() => _unlocked = true);
     widget.onUnlocked?.call();
     _relockTimer = Timer(_unlockedHold, () {
@@ -113,7 +119,10 @@ class _HoldToUnlockState extends State<HoldToUnlock>
                         backgroundColor: Colors.transparent,
                       ),
                       Icon(
-                        _unlocked ? Icons.lock_open_rounded : Icons.lock,
+                        adaptiveIcon(
+                          context,
+                          _unlocked ? Icons.lock_open_rounded : Icons.lock,
+                        ),
                         color: _unlocked ? _green : _brand,
                         size: knob * 0.36,
                       ),

@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 const _brand = Color(0xFF810055);
 const _onBorder = Color(0xFF8DFC63);
 const _offBorder = Color(0xFFD9D9D9);
@@ -17,6 +19,11 @@ class _AiModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // iOS users expect the system switch here. Its system-green "on" track
+    // already speaks the same "active = green" language.
+    if (isCupertino(context)) {
+      return CupertinoSwitch(value: value, onChanged: onChanged);
+    }
     return GestureDetector(
       onTap: () => onChanged(!value),
       child: AnimatedContainer(
@@ -60,14 +67,22 @@ class _ElevatedContainerState extends State<ElevatedContainer> {
   bool _isVisible = true;
   bool _isOn = true;
 
+  // iOS draws grouped content as a flat, filled panel; Material lifts it
+  // with an elevation shadow.
+  double _elevation(BuildContext context) => isCupertino(context) ? 0 : 5;
+
+  Color _surface(BuildContext context) => isCupertino(context)
+      ? CupertinoColors.secondarySystemBackground.resolveFrom(context)
+      : Colors.white;
+
   @override
   Widget build(BuildContext context) {
     if (widget.toggleNeeded) {
       return Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30),
         child: Material(
-          elevation: 5,
-          color: Colors.white,
+          elevation: _elevation(context),
+          color: _surface(context),
           shadowColor: Colors.black26,
           borderRadius: BorderRadius.circular(12),
           child: Container(
@@ -104,8 +119,8 @@ class _ElevatedContainerState extends State<ElevatedContainer> {
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
           child: Material(
-            elevation: 5,
-            color: Colors.white,
+            elevation: _elevation(context),
+            color: _surface(context),
             shadowColor: Colors.black26,
             borderRadius: BorderRadius.circular(12),
             child: Stack(
@@ -151,7 +166,11 @@ class _ElevatedContainerState extends State<ElevatedContainer> {
                         color: Color(0xFFF5F5F5),
                       ),
                       padding: const EdgeInsets.all(4),
-                      child: const Icon(Icons.close, size: 18, color: _brand),
+                      child: Icon(
+                        adaptiveIcon(context, Icons.close),
+                        size: 18,
+                        color: _brand,
+                      ),
                     ),
                   ),
                 ),

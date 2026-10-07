@@ -4,6 +4,7 @@ import 'dart:ui' show lerpDouble;
 
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/screens/home_shell.dart';
 import 'package:godrej_one_sdk/service/user_name_onboarding_handler.dart';
 import 'package:godrej_one_sdk/widgets/landing_top_content.dart';
@@ -87,34 +88,48 @@ class _LandingPageState extends State<LandingPage>
     });
   }
 
-  void _openHome() async {
+  void _openHome() {
     if (!mounted) return;
 
     final launchedIndex = _selected; // preserve chosen user
 
-    await Navigator.of(context).push(
-      PageRouteBuilder(
-        transitionDuration: const Duration(milliseconds: 600),
-        pageBuilder: (_, _, _) => HomeShell(
-          name: _users[launchedIndex].name,
-          asset: _users[launchedIndex].image,
-        ),
-        transitionsBuilder: (_, animation, _, child) =>
-            FadeTransition(opacity: animation, child: child),
+    final route = FadeSwipeBackRoute<void>(
+      transitionDuration: const Duration(milliseconds: 600),
+      builder: (_) => HomeShell(
+        name: _users[launchedIndex].name,
+        asset: _users[launchedIndex].image,
       ),
     );
+    Navigator.of(context).push(route);
 
+    // Rewind the launch animation as soon as Home fully covers this page, so
+    // going back (Android back, or the iOS edge swipe, which reveals this page
+    // under the user's finger) lands on the idle landing screen rather than a
+    // stale "Welcome home" frame that snaps away afterwards.
+    void onStatus(AnimationStatus status) {
+      if (!status.isCompleted) return;
+      route.animation?.removeStatusListener(onStatus);
+      if (mounted) _resetLaunch();
+    }
+
+    route.animation?.addStatusListener(onStatus);
+  }
+
+  void _resetLaunch() {
     setState(() {
       _timer?.cancel();
       _timer = null;
       _launch.reset();
       _flightStart = null;
-      //
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    return AdaptiveStatusBar(lightContent: true, child: _buildPage(context));
+  }
+
+  Widget _buildPage(BuildContext context) {
     return Scaffold(
       body: AnimatedBuilder(
         animation: _launch,

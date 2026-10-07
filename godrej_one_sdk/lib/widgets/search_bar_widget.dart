@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 class SearchBarWidget extends StatefulWidget {
   const SearchBarWidget({super.key, required this.labelText, this.onChanged});
 
@@ -14,8 +16,18 @@ class SearchBarWidget extends StatefulWidget {
 class _SearchBarWidgetState extends State<SearchBarWidget> {
   static const _brand = Color(0xFF810055);
 
+  final FocusNode _focusNode = FocusNode();
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (isCupertino(context)) return _buildCupertino();
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: Material(
@@ -42,6 +54,24 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
               vertical: 14,
             ),
           ),
+        ),
+      ),
+    );
+  }
+
+  /// The system search field. iOS has no back button to put the keyboard
+  /// away, so a tap anywhere outside the field (or its text-selection
+  /// toolbar, which shares the text field's tap region) dismisses it.
+  Widget _buildCupertino() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: TextFieldTapRegion(
+        onTapOutside: (_) => _focusNode.unfocus(),
+        child: CupertinoSearchTextField(
+          focusNode: _focusNode,
+          placeholder: widget.labelText,
+          onChanged: widget.onChanged,
+          onSubmitted: (_) => _focusNode.unfocus(),
         ),
       ),
     );

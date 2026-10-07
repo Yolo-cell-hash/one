@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'package:godrej_one_sdk/models/space.dart';
 import 'package:godrej_one_sdk/models/trail_device.dart';
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/screens/device_activity_screen.dart';
 import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 import 'package:godrej_one_sdk/widgets/glassy_container.dart';
@@ -74,20 +75,28 @@ class DeviceControlPanel extends StatelessWidget {
               builder: (_) => DeviceActivityScreen(device: trailDevice),
             ),
           ),
-          child: const Icon(Icons.access_time_filled, color: _brand, size: 24),
+          child: Icon(
+            adaptiveIcon(context, Icons.access_time_filled),
+            color: _brand,
+            size: 24,
+          ),
         ),
       if (device.userCount == 0 || trailDevice == null)
         switch (device.kind) {
           DeviceKind.camera || DeviceKind.doorbell => _ShortcutTile(
             title: 'Recordings',
             onTap: () => showElegantToast(context, 'Recordings coming soon'),
-            child: const Icon(Icons.video_library, color: _brand, size: 24),
+            child: Icon(
+              adaptiveIcon(context, Icons.video_library),
+              color: _brand,
+              size: 24,
+            ),
           ),
           DeviceKind.sensor => _ShortcutTile(
             title: 'Alerts',
             onTap: () => showElegantToast(context, 'Alerts coming soon'),
-            child: const Icon(
-              Icons.notifications_active,
+            child: Icon(
+              adaptiveIcon(context, Icons.notifications_active),
               color: _brand,
               size: 24,
             ),
@@ -95,12 +104,20 @@ class DeviceControlPanel extends StatelessWidget {
           DeviceKind.light || DeviceKind.appliance => _ShortcutTile(
             title: 'Schedule',
             onTap: () => showElegantToast(context, 'Schedules coming soon'),
-            child: const Icon(Icons.schedule, color: _brand, size: 24),
+            child: Icon(
+              adaptiveIcon(context, Icons.schedule),
+              color: _brand,
+              size: 24,
+            ),
           ),
           DeviceKind.lock => _ShortcutTile(
             title: 'Settings',
             onTap: () => showElegantToast(context, 'Lock settings coming soon'),
-            child: const Icon(Icons.settings, color: _brand, size: 24),
+            child: Icon(
+              adaptiveIcon(context, Icons.settings),
+              color: _brand,
+              size: 24,
+            ),
           ),
         },
     ];
@@ -179,7 +196,11 @@ class _StatsCard extends StatelessWidget {
                 children: [
                   Text(stat.label, style: _labelStyle),
                   const SizedBox(height: 12),
-                  Icon(stat.icon, color: _brand, size: 22),
+                  Icon(
+                    adaptiveIcon(context, stat.icon),
+                    color: _brand,
+                    size: 22,
+                  ),
                   const SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -385,7 +406,10 @@ class _TogglePillState extends State<_TogglePill> {
               color: _on ? _brand : Colors.white.withValues(alpha: 0.85),
             ),
             child: Icon(
-              _on ? (widget.onIcon ?? widget.icon) : widget.icon,
+              adaptiveIcon(
+                context,
+                _on ? (widget.onIcon ?? widget.icon) : widget.icon,
+              ),
               color: _on ? Colors.white : _brand,
               size: knob * 0.4,
             ),
@@ -426,9 +450,13 @@ class _TogglePillState extends State<_TogglePill> {
           AnimatedOpacity(
             duration: const Duration(milliseconds: 200),
             opacity: _on ? 1 : 0,
-            child: const Padding(
-              padding: EdgeInsets.only(right: 12),
-              child: Icon(Icons.check_circle, color: _green, size: 18),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 12),
+              child: Icon(
+                adaptiveIcon(context, Icons.check_circle),
+                color: _green,
+                size: 18,
+              ),
             ),
           ),
         ],
@@ -457,7 +485,11 @@ class _BrightnessCardState extends State<_BrightnessCard> {
         children: [
           Row(
             children: [
-              const Icon(Icons.brightness_6_outlined, color: _brand, size: 20),
+              Icon(
+                adaptiveIcon(context, Icons.brightness_6_outlined),
+                color: _brand,
+                size: 20,
+              ),
               const SizedBox(width: 10),
               const Expanded(child: Text('Brightness', style: _labelStyle)),
               Text('${(_value * 100).round()}%', style: _labelStyle),
@@ -471,7 +503,9 @@ class _BrightnessCardState extends State<_BrightnessCard> {
               overlayColor: _brand.withValues(alpha: 0.12),
               trackHeight: 4,
             ),
-            child: Slider(
+            // CupertinoSlider on iOS (white thumb, brand track via the
+            // Cupertino theme); the themed Material slider on Android.
+            child: Slider.adaptive(
               value: _value,
               onChanged: (v) => setState(() => _value = v),
             ),

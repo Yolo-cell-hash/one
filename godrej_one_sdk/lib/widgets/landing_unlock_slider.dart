@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:vibration/vibration.dart';
 import 'package:vibration/vibration_presets.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 const _brand = Color(0xFF810055);
 const _armedGreen = Color(0xFF22C55E);
 const _failedRed = Color(0xFFEF4444);
@@ -119,7 +121,13 @@ class _LandingUnlockSliderState extends State<LandingUnlockSlider>
   void _fail() {
     _hold.stop();
     setState(() => _phase = _Phase.failed);
-    Vibration.vibrate(preset: VibrationPreset.doubleBuzz);
+    // iOS has a system haptic for exactly this; a custom buzz pattern there
+    // feels foreign.
+    if (isCupertino(context)) {
+      HapticFeedback.errorNotification();
+    } else {
+      Vibration.vibrate(preset: VibrationPreset.doubleBuzz);
+    }
     _slide.animateTo(
       0,
       duration: const Duration(milliseconds: 350),
@@ -143,7 +151,12 @@ class _LandingUnlockSliderState extends State<LandingUnlockSlider>
           curve: Curves.easeOut,
         )
         .whenComplete(() {
-          HapticFeedback.heavyImpact();
+          if (!mounted) return;
+          if (isCupertino(context)) {
+            HapticFeedback.successNotification();
+          } else {
+            HapticFeedback.heavyImpact();
+          }
           widget.onUnlocked?.call();
         });
     _timer = Timer(_unlockedHold, _relock);
@@ -281,7 +294,7 @@ class _Knob extends StatelessWidget {
           child: FadeTransition(opacity: animation, child: child),
         ),
         child: Icon(
-          unlocked ? Icons.lock_open : Icons.lock,
+          adaptiveIcon(context, unlocked ? Icons.lock_open : Icons.lock),
           key: ValueKey(unlocked),
           color: _brand,
           size: 24,

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:flutter/cupertino.dart';
+
 import 'package:godrej_one_sdk/models/trail_device.dart';
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/widgets/screen_header.dart';
 import 'package:godrej_one_sdk/widgets/search_bar_widget.dart';
 
@@ -70,6 +73,11 @@ class _DeviceCatalogPageState extends State<DeviceCatalogPage> {
             child: devices.isEmpty
                 ? const _NoDevices()
                 : ListView.builder(
+                    // iOS lists put the keyboard away when you start
+                    // scrolling them.
+                    keyboardDismissBehavior: isCupertino(context)
+                        ? ScrollViewKeyboardDismissBehavior.onDrag
+                        : ScrollViewKeyboardDismissBehavior.manual,
                     padding: EdgeInsets.only(
                       bottom: barHeight + media.padding.bottom + gap * 2,
                     ),
@@ -222,6 +230,14 @@ class _DeviceTile extends StatelessWidget {
                 ],
               ),
             ),
+            // iOS marks rows that open another page with a disclosure
+            // chevron.
+            if (isCupertino(context))
+              Icon(
+                CupertinoIcons.chevron_forward,
+                size: 18,
+                color: CupertinoColors.tertiaryLabel.resolveFrom(context),
+              ),
           ],
         ),
       ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 import 'package:godrej_one_sdk/screens/activity_trails_screen.dart';
 import 'package:godrej_one_sdk/screens/add_devices_screen.dart';
 import 'package:godrej_one_sdk/screens/customize_screen.dart';
@@ -62,7 +63,11 @@ class _HomeShellState extends State<HomeShell> {
     Colors.white, // Customize
   ];
 
-  BottomBarItem _toBarItem(BottomBarItemSpec spec, VoidCallback onTap) {
+  BottomBarItem _toBarItem(
+    BuildContext context,
+    BottomBarItemSpec spec,
+    VoidCallback onTap,
+  ) {
     final assetPath = spec.assetPath;
     return assetPath != null
         ? BottomBarItem.asset(
@@ -73,7 +78,7 @@ class _HomeShellState extends State<HomeShell> {
           )
         : BottomBarItem.icon(
             spec.id,
-            spec.icon!,
+            adaptiveIcon(context, spec.icon!),
             tooltip: spec.tooltip,
             onTap: onTap,
           );
@@ -92,52 +97,59 @@ class _HomeShellState extends State<HomeShell> {
     final index = barProvider.selectedIndex;
     final tabBackground = _tabBackgrounds[index];
 
-    return Scaffold(
-      backgroundColor: Colors.white,
-      body: Stack(
-        children: [
-          if (tabBackground == null)
-            Image.asset(
-              'images/home_screen_bg.png',
-              package: 'godrej_one_sdk',
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            )
-          else
-            ColoredBox(color: tabBackground),
-          IndexedStack(index: index, children: _tabs),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: SafeArea(
-              top: false,
-              child: Padding(
-                padding: EdgeInsets.fromLTRB(gutter, 0, gutter, gap * 0.5),
-                child: GlassyContainer(
-                  isABottomBar: true,
-                  height: barHeight,
-                  width: double.infinity,
-                  // The default hairline is white-on-white and disappears
-                  // over a solid tab background (e.g. Activity Trails) —
-                  // this dark, low-alpha border stays visible over both the
-                  // photo and a plain white page.
-                  borderExists: true,
-                  borderColor: Colors.black.withValues(alpha: 0.06),
-                  bottomBarSelectedIndex: index,
-                  bottomBarItems: [
-                    for (var i = 0; i < barProvider.items.length; i++)
-                      _toBarItem(
-                        barProvider.items[i],
-                        () => barProvider.select(i),
-                      ),
-                  ],
+    return AdaptiveStatusBar(
+      lightContent: tabBackground == null,
+      child: Scaffold(
+        backgroundColor: Colors.white,
+        // An iOS tab bar stays put and is covered by the keyboard; it doesn't
+        // ride up above it.
+        resizeToAvoidBottomInset: !isCupertino(context),
+        body: Stack(
+          children: [
+            if (tabBackground == null)
+              Image.asset(
+                'images/home_screen_bg.png',
+                package: 'godrej_one_sdk',
+                fit: BoxFit.cover,
+                width: double.infinity,
+                height: double.infinity,
+              )
+            else
+              ColoredBox(color: tabBackground),
+            IndexedStack(index: index, children: _tabs),
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: SafeArea(
+                top: false,
+                child: Padding(
+                  padding: EdgeInsets.fromLTRB(gutter, 0, gutter, gap * 0.5),
+                  child: GlassyContainer(
+                    isABottomBar: true,
+                    height: barHeight,
+                    width: double.infinity,
+                    // The default hairline is white-on-white and disappears
+                    // over a solid tab background (e.g. Activity Trails) —
+                    // this dark, low-alpha border stays visible over both the
+                    // photo and a plain white page.
+                    borderExists: true,
+                    borderColor: Colors.black.withValues(alpha: 0.06),
+                    bottomBarSelectedIndex: index,
+                    bottomBarItems: [
+                      for (var i = 0; i < barProvider.items.length; i++)
+                        _toBarItem(
+                          context,
+                          barProvider.items[i],
+                          () => barProvider.select(i),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

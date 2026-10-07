@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:provider/provider.dart';
@@ -11,6 +12,17 @@ Widget returnMainApp() {
   return MyApp();
 }
 
+const _brand = Color(0xFF810055);
+
+/// Android keeps Material's defaults untouched. On iOS, drop the ink ripple
+/// (iOS controls dim or highlight instead) and tint Cupertino widgets
+/// (cursor, selection handles, search field, switches, sliders) with the
+/// brand color.
+final ThemeData _iosTheme = ThemeData(
+  splashFactory: NoSplash.splashFactory,
+  cupertinoOverrideTheme: const CupertinoThemeData(primaryColor: _brand),
+);
+
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
@@ -23,7 +35,10 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => BottomBarProvider())],
-      child: MaterialApp(home: SplashScreen()),
+      child: MaterialApp(
+        theme: defaultTargetPlatform == TargetPlatform.iOS ? _iosTheme : null,
+        home: SplashScreen(),
+      ),
     );
   }
 }

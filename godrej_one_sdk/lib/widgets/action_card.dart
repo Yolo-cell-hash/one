@@ -1,4 +1,7 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+
+import 'package:godrej_one_sdk/platform/adaptive.dart';
 
 const _brand = Color(0xFF810055);
 
@@ -19,24 +22,35 @@ class BrandPillButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final text = Text(
+      label,
+      style: TextStyle(
+        fontSize: fontSize,
+        color: Colors.white,
+        fontFamily: 'GEG',
+        package: 'godrej_one_sdk',
+      ),
+    );
+
+    // iOS buttons dim while pressed instead of drawing an ink highlight.
+    if (isCupertino(context)) {
+      return CupertinoButton(
+        onPressed: onTap,
+        padding: padding,
+        minimumSize: Size.zero,
+        color: _brand,
+        borderRadius: BorderRadius.circular(999),
+        child: text,
+      );
+    }
+
     return Material(
       color: _brand,
       shape: const StadiumBorder(),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
-        child: Padding(
-          padding: padding,
-          child: Text(
-            label,
-            style: TextStyle(
-              fontSize: fontSize,
-              color: Colors.white,
-              fontFamily: 'GEG',
-              package: 'godrej_one_sdk',
-            ),
-          ),
-        ),
+        child: Padding(padding: padding, child: text),
       ),
     );
   }

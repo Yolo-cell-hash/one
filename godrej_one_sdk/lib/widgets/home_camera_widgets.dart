@@ -1,6 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/platform/adaptive.dart';
+
 class HomeCameraWidgets extends StatefulWidget {
   const HomeCameraWidgets({super.key, required this.status, this.onHomeTap});
 
@@ -39,11 +41,16 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
           const SizedBox(width: 14),
           GestureDetector(
             onTap: () {},
-            child: Image.asset(
-              'images/chevron.png',
-              package: 'godrej_one_sdk',
-              width: 34,
-              height: 34,
+            // The asset is Android's vertical overflow dots on a round disc;
+            // a quarter turn gives iOS its horizontal ellipsis.
+            child: RotatedBox(
+              quarterTurns: isCupertino(context) ? 1 : 0,
+              child: Image.asset(
+                'images/chevron.png',
+                package: 'godrej_one_sdk',
+                width: 34,
+                height: 34,
+              ),
             ),
           ),
         ],
