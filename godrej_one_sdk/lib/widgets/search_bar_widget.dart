@@ -2,16 +2,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
 class SearchBarWidget extends StatefulWidget {
-  const SearchBarWidget({super.key, required this.labelText});
+  const SearchBarWidget({super.key, required this.labelText, this.onChanged});
 
   final String labelText;
+  final ValueChanged<String>? onChanged;
 
   @override
   State<SearchBarWidget> createState() => _SearchBarWidgetState();
 }
 
 class _SearchBarWidgetState extends State<SearchBarWidget> {
-
   static const _brand = Color(0xFF810055);
 
   @override
@@ -24,6 +24,7 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         shadowColor: Colors.black26,
         borderRadius: BorderRadius.circular(12),
         child: TextField(
+          onChanged: widget.onChanged,
           style: const TextStyle(fontSize: 16, color: Colors.black),
           decoration: InputDecoration(
             labelText: widget.labelText,

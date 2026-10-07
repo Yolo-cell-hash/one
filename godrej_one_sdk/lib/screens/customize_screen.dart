@@ -10,15 +10,29 @@ class CustomizeScreen extends StatelessWidget {
   const CustomizeScreen({super.key});
 
   static const _brand = Color(0xFF810055);
+  final headerHeight = 85.0;
 
   @override
   Widget build(BuildContext context) {
+    final media = MediaQuery.of(context);
+    final w = media.size.width;
+    // Same formula HomeShell uses for its own bar, so this always clears it
+    // exactly — the bar is fixed chrome owned by HomeShell, this screen only
+    // needs to leave room for it.
+    final barHeight = (w * 0.19).clamp(66.0, 84.0);
+    final gap = (w * 0.035).clamp(12.0, 18.0);
+
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Fixed Top Navigation Header
         Padding(
-          padding: const EdgeInsets.only(top: 85, left: 30, right: 30),
+          padding: const EdgeInsets.only(
+            top: 85,
+            left: 30,
+            right: 30,
+            bottom: 25.0,
+          ),
           child: SizedBox(
             width: double.infinity,
             child: Stack(
@@ -42,8 +56,8 @@ class CustomizeScreen extends StatelessWidget {
                       color: Colors.grey,
                       borderRadius: BorderRadius.circular(22.0),
                     ),
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
+                    child: const Padding(
+                      padding: EdgeInsets.all(8.0),
                       child: Icon(
                         Icons.more_vert_rounded,
                         size: 22,
@@ -56,72 +70,94 @@ class CustomizeScreen extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 25.0),
-        SearchBarWidget(labelText: 'Search Customization'),
-        SizedBox(height: 25.0),
-        Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30.0),
-          child: SelectableText(
-            "Dynamic Navigation Bar",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.w500,
-              color: _brand,
-              fontFamily: "GEG",
-              package: "godrej_one_sdk",
+
+        // Scrollable Body Content
+        Expanded(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.only(
+              bottom: barHeight + media.padding.bottom + gap * 2,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SearchBarWidget(labelText: 'Search Customization'),
+                const SizedBox(height: 25.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30.0),
+                  child: SelectableText(
+                    "Dynamic Navigation Bar",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w500,
+                      color: _brand,
+                      fontFamily: "GEG",
+                      package: "godrej_one_sdk",
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 25.0),
+                ElevatedContainer(toggleNeeded: false),
+                const SizedBox(height: 25.0),
+                const CustomizationCard(
+                  id: 'activity_trails',
+                  title: 'Audit Trail',
+                  subtitle: 'Activity History',
+                  card_icon: Icons.access_time_filled,
+                  hasIcon: true,
+                ),
+                const CustomizationCard(
+                  id: 'devices',
+                  title: 'Devices',
+                  subtitle: 'Connected Control',
+                  card_icon: Icons.workspaces_filled,
+                  hasIcon: true,
+                ),
+                const CustomizationCard(
+                  id: 'widgets',
+                  title: 'Widgets',
+                  subtitle: 'Smart Information',
+                  card_icon: Icons.widgets,
+                  hasIcon: true,
+                ),
+                const CustomizationCard(
+                  id: 'my_space',
+                  title: 'My Space',
+                  subtitle: 'Home Overview',
+                  hasIcon: false,
+                  cardImage: 'images/svgs/spaces.svg',
+                  cardImagePackage: 'godrej_one_sdk',
+                ),
+                const CustomizationCard(
+                  id: 'modes',
+                  title: 'Modes',
+                  subtitle: 'Scenes Presets',
+                  hasIcon: false,
+                  cardImage: 'images/svgs/modes.svg',
+                  cardImagePackage: 'godrej_one_sdk',
+                ),
+                const CustomizationCard(
+                  id: 'habits',
+                  title: 'Habits',
+                  subtitle: 'Smart Routines',
+                  hasIcon: false,
+                  cardImage: 'images/svgs/habits.svg',
+                  cardImagePackage: 'godrej_one_sdk',
+                ),
+                const CustomizationCard(
+                  id: 'device_detection',
+                  title: 'Device Detection',
+                  subtitle: 'Scan to find / Auto Detect',
+                  hasIcon: false,
+                  cardImage: 'images/svgs/device_detection.svg',
+                  cardImagePackage: 'godrej_one_sdk',
+                ),
+                const SizedBox(height: 25.0),
+                ElevatedContainer(toggleNeeded: true),
+              ],
             ),
           ),
         ),
-        SizedBox(height: 25.0),
-        ElevatedContainer(),
-        SizedBox(height: 25.0),
-        CustomizationCard(
-          title: 'Audit Trail',
-          subtitle: 'Activity History',
-          card_icon: Icons.access_time_filled,
-          hasIcon: true,
-        ),
-        CustomizationCard(
-          title: 'Devices',
-          subtitle: 'Connected Control',
-          card_icon: Icons.workspaces_filled,
-          hasIcon: true,
-        ),
-        CustomizationCard(
-          title: 'Widgets',
-          subtitle: 'Smart Information',
-          card_icon: Icons.widgets,
-          hasIcon: true,
-        ),
-        CustomizationCard(
-          title: 'My Space',
-          subtitle: 'Home Overview',
-          hasIcon: false,
-          cardImage: 'images/svgs/spaces.svg',
-          cardImagePackage: 'godrej_one_sdk',
-        ),
-        CustomizationCard(
-          title: 'Modes',
-          subtitle: 'Scenes Presets',
-          hasIcon: false,
-          cardImage: 'images/svgs/modes.svg',
-          cardImagePackage: 'godrej_one_sdk',
-        ),
-        CustomizationCard(
-          title: 'Habits',
-          subtitle: 'Smart Routines',
-          hasIcon: false,
-          cardImage: 'images/svgs/habits.svg',
-          cardImagePackage: 'godrej_one_sdk',
-        ),
-        CustomizationCard(
-          title: 'Device Detection',
-          subtitle: 'Scan to find / Auto Detect',
-          hasIcon: false,
-          cardImage: 'images/svgs/device_detection.svg',
-          cardImagePackage: 'godrej_one_sdk',
-        )
-
       ],
     );
   }

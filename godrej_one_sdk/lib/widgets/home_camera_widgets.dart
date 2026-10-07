@@ -2,9 +2,12 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class HomeCameraWidgets extends StatefulWidget {
-  const HomeCameraWidgets({super.key, required this.status});
+  const HomeCameraWidgets({super.key, required this.status, this.onHomeTap});
 
   final int status;
+
+  /// Tap on the home (property) button — e.g. open the Property page.
+  final VoidCallback? onHomeTap;
 
   @override
   State<HomeCameraWidgets> createState() => _HomeCameraWidgetsState();
@@ -16,15 +19,7 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
     if (widget.status == 0) {
       return Column(
         children: [
-          GestureDetector(
-            onTap: () {},
-            child: Image.asset(
-              'images/home_landing_icon.png',
-              package: 'godrej_one_sdk',
-              width: 34,
-              height: 34,
-            ),
-          ),
+          GestureDetector(onTap: widget.onHomeTap, child: const _HomeButton()),
           const SizedBox(height: 14),
           GestureDetector(
             onTap: () {},
@@ -40,15 +35,7 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
     } else {
       return Row(
         children: [
-          GestureDetector(
-            onTap: () {},
-            child: Image.asset(
-              'images/home_landing_icon.png',
-              package: 'godrej_one_sdk',
-              width: 34,
-              height: 34,
-            ),
-          ),
+          GestureDetector(onTap: widget.onHomeTap, child: const _HomeButton()),
           const SizedBox(width: 14),
           GestureDetector(
             onTap: () {},
@@ -62,5 +49,30 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
         ],
       );
     }
+  }
+}
+
+/// Round light-grey button with the brand house-and-dot glyph, sized to sit
+/// beside the other 34px header buttons.
+class _HomeButton extends StatelessWidget {
+  const _HomeButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 34,
+      height: 34,
+      alignment: Alignment.center,
+      decoration: const BoxDecoration(
+        color: Color(0xFFE4E4E2),
+        shape: BoxShape.circle,
+      ),
+      child: Image.asset(
+        'images/home_property_icon.png',
+        package: 'godrej_one_sdk',
+        height: 17,
+        fit: BoxFit.contain,
+      ),
+    );
   }
 }

@@ -34,6 +34,7 @@ enum GlassyMediaLayout {
 /// back to [Image.asset].
 class BottomBarItem {
   const BottomBarItem._({
+    required this.id,
     this.iconData,
     this.assetPath,
     this.package = 'godrej_one_sdk',
@@ -45,12 +46,14 @@ class BottomBarItem {
 
   /// An item backed by an [IconData], e.g. `Icons.home_filled`.
   const BottomBarItem.icon(
+    String id,
     IconData icon, {
     Color? color,
     double? size,
     String? tooltip,
     VoidCallback? onTap,
   }) : this._(
+         id: id,
          iconData: icon,
          color: color,
          size: size,
@@ -64,6 +67,7 @@ class BottomBarItem {
   /// [package] defaults to `godrej_one_sdk` (assets shipped with this SDK);
   /// pass `null` for an asset that lives in the host app.
   const BottomBarItem.asset(
+    String id,
     String assetPath, {
     String? package = 'godrej_one_sdk',
     Color? color,
@@ -71,6 +75,7 @@ class BottomBarItem {
     String? tooltip,
     VoidCallback? onTap,
   }) : this._(
+         id: id,
          assetPath: assetPath,
          package: package,
          color: color,
@@ -91,6 +96,7 @@ class BottomBarItem {
 
   final String? tooltip;
   final VoidCallback? onTap;
+  final String id;
 
   bool get isSvg =>
       assetPath != null && assetPath!.toLowerCase().endsWith('.svg');
@@ -314,10 +320,6 @@ class GlassyContainer extends StatelessWidget {
       child = Tooltip(message: item.tooltip!, child: child);
     }
 
-    if (item.onTap != null) {
-      child = InkResponse(onTap: item.onTap, radius: size * 1.4, child: child);
-    }
-
     return child;
   }
 
@@ -335,11 +337,21 @@ class GlassyContainer extends StatelessWidget {
             children: [
               for (var i = 0; i < bottomBarItems.length; i++)
                 Expanded(
-                  child: Center(
-                    child: _buildBottomBarItem(
-                      bottomBarItems[i],
+                  // The whole slot — full bar height, an equal share of its
+                  // width — is the tap target, not just the glyph.
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: bottomBarItems[i].onTap,
+                    child: Semantics(
+                      button: true,
                       selected: i == bottomBarSelectedIndex,
-                      barIconSize: iconSize,
+                      child: Center(
+                        child: _buildBottomBarItem(
+                          bottomBarItems[i],
+                          selected: i == bottomBarSelectedIndex,
+                          barIconSize: iconSize,
+                        ),
+                      ),
                     ),
                   ),
                 ),
