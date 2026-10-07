@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/screens/property_screen.dart';
+import 'package:godrej_one_sdk/screens/space_detail_screen.dart';
+import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 import 'package:godrej_one_sdk/widgets/home_camera_widgets.dart';
 import 'package:godrej_one_sdk/widgets/glassy_container.dart';
 import 'package:godrej_one_sdk/widgets/glassy_scrollbar.dart';
@@ -21,6 +24,18 @@ class _HomeScreenState extends State<HomeScreen> {
   void dispose() {
     _scrollController.dispose();
     super.dispose();
+  }
+
+  /// Opens a room's page — straight onto [device] when given — over the
+  /// Home tab; back returns here.
+  void _openSpace(BuildContext context, String spaceId, {String? device}) {
+    SpaceDetailScreen.open(
+      context,
+      spaceId: spaceId,
+      deviceName: device,
+      name: widget.name,
+      asset: widget.asset,
+    );
   }
 
   @override
@@ -81,6 +96,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         'Security system is armed away. All doors are locked. All gates are closed',
                     borderExists: true,
                     borderColor: const Color(0xFF8DFC63),
+                    onTap: () => _openSpace(context, 'entrance'),
                   ),
                   SizedBox(height: gap),
                   Row(
@@ -106,6 +122,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           38,
                           45,
                         ],
+                        onTap: () => showElegantToast(
+                          context,
+                          'Energy insights coming soon',
+                        ),
                       ),
                       GlassyContainer(
                         flex: 1,
@@ -113,6 +133,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Indoor Temp',
                         subtitle: '24° C',
                         caption: 'Cozy',
+                        onTap: () => _openSpace(
+                          context,
+                          'living_room',
+                          device: 'Air Conditioner',
+                        ),
                       ),
                     ],
                   ),
@@ -126,6 +151,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         title: 'Air Quality',
                         subtitle: '42',
                         caption: 'Good',
+                        onTap: () => _openSpace(
+                          context,
+                          'dining',
+                          device: 'Air Purifier',
+                        ),
                       ),
                       GlassyContainer(
                         flex: 5,
@@ -141,6 +171,11 @@ class _HomeScreenState extends State<HomeScreen> {
                         mediaLayout: GlassyMediaLayout.overlay,
                         imageWidthFactor: 0.52,
                         imageHeightFactor: 0.88,
+                        onTap: () => _openSpace(
+                          context,
+                          'entrance',
+                          device: 'Main Door Lock',
+                        ),
                       ),
                     ],
                   ),
@@ -156,6 +191,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     mediaLayout: GlassyMediaLayout.panel,
                     mediaWidthFactor: 0.58,
                     mediaOverlay: const _RecordingBadge(),
+                    onTap: () => _openSpace(
+                      context,
+                      'entrance',
+                      device: 'Entrance Camera',
+                    ),
                   ),
                   SizedBox(height: gap),
                   Row(
@@ -172,6 +212,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         imageWidthFactor: 0.38,
                         imageHeightFactor: 0.72,
                         imagePadding: const EdgeInsets.only(right: 10),
+                        onTap: () =>
+                            _openSpace(context, 'entrance', device: 'VDB'),
                       ),
                       GlassyContainer(
                         flex: 1,
@@ -185,6 +227,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         imageWidthFactor: 0.26,
                         imageHeightFactor: 0.26,
                         imagePadding: const EdgeInsets.fromLTRB(18, 0, 0, 16),
+                        onTap: () => showElegantToast(
+                          context,
+                          'More widgets coming soon',
+                        ),
                       ),
                     ],
                   ),
@@ -255,7 +301,12 @@ class _Header extends StatelessWidget {
             ],
           ),
         ),
-        const HomeCameraWidgets(status: 1),
+        HomeCameraWidgets(
+          status: 1,
+          onHomeTap: () => Navigator.of(context).push(
+            MaterialPageRoute<void>(builder: (_) => const PropertyScreen()),
+          ),
+        ),
       ],
     );
   }

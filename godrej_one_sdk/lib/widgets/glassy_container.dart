@@ -36,6 +36,7 @@ enum GlassyMediaLayout {
 /// back to [Image.asset].
 class BottomBarItem {
   const BottomBarItem._({
+    required this.id,
     this.iconData,
     this.assetPath,
     this.package = 'godrej_one_sdk',
@@ -47,12 +48,14 @@ class BottomBarItem {
 
   /// An item backed by an [IconData], e.g. `Icons.home_filled`.
   const BottomBarItem.icon(
+    String id,
     IconData icon, {
     Color? color,
     double? size,
     String? tooltip,
     VoidCallback? onTap,
   }) : this._(
+         id: id,
          iconData: icon,
          color: color,
          size: size,
@@ -66,6 +69,7 @@ class BottomBarItem {
   /// [package] defaults to `godrej_one_sdk` (assets shipped with this SDK);
   /// pass `null` for an asset that lives in the host app.
   const BottomBarItem.asset(
+    String id,
     String assetPath, {
     String? package = 'godrej_one_sdk',
     Color? color,
@@ -73,6 +77,7 @@ class BottomBarItem {
     String? tooltip,
     VoidCallback? onTap,
   }) : this._(
+         id: id,
          assetPath: assetPath,
          package: package,
          color: color,
@@ -93,6 +98,7 @@ class BottomBarItem {
 
   final String? tooltip;
   final VoidCallback? onTap;
+  final String id;
 
   bool get isSvg =>
       assetPath != null && assetPath!.toLowerCase().endsWith('.svg');
@@ -313,27 +319,12 @@ class GlassyContainer extends StatelessWidget {
       );
     }
 
-    if (cupertino) {
-      // A UITabBar item has no ripple and no long-press tooltip: the selection
-      // pill is the only feedback, and the label goes to VoiceOver.
-      return Semantics(
-        label: item.tooltip,
-        button: item.onTap != null,
-        selected: selected,
-        child: GestureDetector(
-          behavior: HitTestBehavior.opaque,
-          onTap: item.onTap,
-          child: child,
-        ),
-      );
-    }
-
+    // A UITabBar item has no long-press tooltip; on iOS the label only goes
+    // to VoiceOver.
     if (item.tooltip != null) {
-      child = Tooltip(message: item.tooltip!, child: child);
-    }
-
-    if (item.onTap != null) {
-      child = InkResponse(onTap: item.onTap, radius: size * 1.4, child: child);
+      child = cupertino
+          ? Semantics(label: item.tooltip, child: child)
+          : Tooltip(message: item.tooltip!, child: child);
     }
 
     return child;
@@ -354,12 +345,22 @@ class GlassyContainer extends StatelessWidget {
             children: [
               for (var i = 0; i < bottomBarItems.length; i++)
                 Expanded(
-                  child: Center(
-                    child: _buildBottomBarItem(
-                      bottomBarItems[i],
+                  // The whole slot — full bar height, an equal share of its
+                  // width — is the tap target, not just the glyph.
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: bottomBarItems[i].onTap,
+                    child: Semantics(
+                      button: true,
                       selected: i == bottomBarSelectedIndex,
-                      barIconSize: iconSize,
-                      cupertino: cupertino,
+                      child: Center(
+                        child: _buildBottomBarItem(
+                          bottomBarItems[i],
+                          selected: i == bottomBarSelectedIndex,
+                          barIconSize: iconSize,
+                          cupertino: cupertino,
+                        ),
+                      ),
                     ),
                   ),
                 ),
@@ -407,7 +408,7 @@ class GlassyContainer extends StatelessWidget {
 
   // ------------------------------------------------------------------ content
 
-  Widget _textColumn(double s, {required bool bounded}) {
+  Widget _textColumn(BuildContext context, double s, {required bool bounded}) {
     final effectiveSubtitleColor = subtitleColor ?? subtitle_color ?? color;
     final hasValueBlock =
         subtitle != null || caption != null || statusDotColor != null;
@@ -431,7 +432,7 @@ class GlassyContainer extends StatelessWidget {
             children: [
               if (subtitleIcon != null) ...[
                 Icon(
-                  subtitleIcon,
+                  adaptiveIcon(context, subtitleIcon!),
                   size: (s * 0.046).clamp(15.0, 21.0),
                   color: subtitleIconColor ?? effectiveSubtitleColor,
                 ),
@@ -526,7 +527,7 @@ class GlassyContainer extends StatelessWidget {
           Expanded(
             child: Padding(
               padding: _contentPadding(screenWidth),
-              child: _textColumn(screenWidth, bounded: bounded),
+              child: _textColumn(context, screenWidth, bounded: bounded),
             ),
           ),
           SizedBox(width: w * mediaWidthFactor, child: _mediaPanel(w)),
@@ -564,7 +565,7 @@ class GlassyContainer extends StatelessWidget {
           ),
         Padding(
           padding: _contentPadding(screenWidth),
-          child: _textColumn(screenWidth, bounded: bounded),
+          child: _textColumn(context, screenWidth, bounded: bounded),
         ),
       ],
     );

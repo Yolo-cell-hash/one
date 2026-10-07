@@ -1,8 +1,10 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:provider/provider.dart';
 
 import 'package:godrej_one_sdk/screens/splash_screen.dart';
+import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
 
 void main() => runApp(const MyApp());
 
@@ -14,7 +16,8 @@ const _brand = Color(0xFF810055);
 
 /// Android keeps Material's defaults untouched. On iOS, drop the ink ripple
 /// (iOS controls dim or highlight instead) and tint Cupertino widgets
-/// (cursor, selection handles, search field) with the brand color.
+/// (cursor, selection handles, search field, switches, sliders) with the
+/// brand color.
 final ThemeData _iosTheme = ThemeData(
   splashFactory: NoSplash.splashFactory,
   cupertinoOverrideTheme: const CupertinoThemeData(primaryColor: _brand),
@@ -30,9 +33,12 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      theme: defaultTargetPlatform == TargetPlatform.iOS ? _iosTheme : null,
-      home: SplashScreen(),
+    return MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => BottomBarProvider())],
+      child: MaterialApp(
+        theme: defaultTargetPlatform == TargetPlatform.iOS ? _iosTheme : null,
+        home: SplashScreen(),
+      ),
     );
   }
 }

@@ -11,22 +11,29 @@ class CustomizeScreen extends StatelessWidget {
   const CustomizeScreen({super.key});
 
   static const _brand = Color(0xFF810055);
+  final headerHeight = 85.0;
 
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
     final w = media.size.width;
-
-    // Same metrics as HomeShell, to keep the last row clear of the floating bar.
-    final gap = (w * 0.035).clamp(12.0, 18.0);
+    // Same formula HomeShell uses for its own bar, so this always clears it
+    // exactly — the bar is fixed chrome owned by HomeShell, this screen only
+    // needs to leave room for it.
     final barHeight = (w * 0.19).clamp(66.0, 84.0);
+    final gap = (w * 0.035).clamp(12.0, 18.0);
 
     return Column(
-      mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        // Fixed Top Navigation Header
         Padding(
-          padding: const EdgeInsets.only(top: 85, left: 30, right: 30),
+          padding: const EdgeInsets.only(
+            top: 85,
+            left: 30,
+            right: 30,
+            bottom: 25.0,
+          ),
           child: SizedBox(
             width: double.infinity,
             child: Stack(
@@ -53,7 +60,7 @@ class CustomizeScreen extends StatelessWidget {
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Icon(
-                        AppIcons.more.of(context),
+                        adaptiveIcon(context, Icons.more_vert_rounded),
                         size: 22,
                         color: _brand,
                       ),
@@ -64,14 +71,11 @@ class CustomizeScreen extends StatelessWidget {
             ),
           ),
         ),
-        SizedBox(height: 25.0),
-        SearchBarWidget(labelText: 'Search Customization'),
-        SizedBox(height: 25.0),
-        // The title and search stay pinned; the list scrolls beneath them.
-        // It used to be a plain Column that ran off the bottom of the screen
-        // (and under the floating bar) on shorter phones.
+
+        // Scrollable Body Content
         Expanded(
           child: SingleChildScrollView(
+            // iOS lists put the keyboard away when you start scrolling them.
             keyboardDismissBehavior: isCupertino(context)
                 ? ScrollViewKeyboardDismissBehavior.onDrag
                 : ScrollViewKeyboardDismissBehavior.manual,
@@ -82,8 +86,10 @@ class CustomizeScreen extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.start,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30.0),
+                const SearchBarWidget(labelText: 'Search Customization'),
+                const SizedBox(height: 25.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 30.0),
                   child: SelectableText(
                     "Dynamic Navigation Bar",
                     style: TextStyle(
@@ -95,56 +101,64 @@ class CustomizeScreen extends StatelessWidget {
                     ),
                   ),
                 ),
-                SizedBox(height: 25.0),
-                ElevatedContainer(),
-                SizedBox(height: 25.0),
-                CustomizationCard(
+                const SizedBox(height: 25.0),
+                ElevatedContainer(toggleNeeded: false),
+                const SizedBox(height: 25.0),
+                const CustomizationCard(
+                  id: 'activity_trails',
                   title: 'Audit Trail',
                   subtitle: 'Activity History',
-                  card_icon: AppIcons.activity.of(context),
+                  card_icon: Icons.access_time_filled,
                   hasIcon: true,
                 ),
-                CustomizationCard(
+                const CustomizationCard(
+                  id: 'devices',
                   title: 'Devices',
                   subtitle: 'Connected Control',
-                  card_icon: AppIcons.devices.of(context),
+                  card_icon: Icons.workspaces_filled,
                   hasIcon: true,
                 ),
-                CustomizationCard(
+                const CustomizationCard(
+                  id: 'widgets',
                   title: 'Widgets',
                   subtitle: 'Smart Information',
-                  card_icon: AppIcons.widgets.of(context),
+                  card_icon: Icons.widgets,
                   hasIcon: true,
                 ),
-                CustomizationCard(
+                const CustomizationCard(
+                  id: 'my_space',
                   title: 'My Space',
                   subtitle: 'Home Overview',
                   hasIcon: false,
                   cardImage: 'images/svgs/spaces.svg',
                   cardImagePackage: 'godrej_one_sdk',
                 ),
-                CustomizationCard(
+                const CustomizationCard(
+                  id: 'modes',
                   title: 'Modes',
                   subtitle: 'Scenes Presets',
                   hasIcon: false,
                   cardImage: 'images/svgs/modes.svg',
                   cardImagePackage: 'godrej_one_sdk',
                 ),
-                CustomizationCard(
+                const CustomizationCard(
+                  id: 'habits',
                   title: 'Habits',
                   subtitle: 'Smart Routines',
                   hasIcon: false,
                   cardImage: 'images/svgs/habits.svg',
                   cardImagePackage: 'godrej_one_sdk',
                 ),
-                CustomizationCard(
+                const CustomizationCard(
+                  id: 'device_detection',
                   title: 'Device Detection',
                   subtitle: 'Scan to find / Auto Detect',
                   hasIcon: false,
                   cardImage: 'images/svgs/device_detection.svg',
                   cardImagePackage: 'godrej_one_sdk',
-                )
-
+                ),
+                const SizedBox(height: 25.0),
+                ElevatedContainer(toggleNeeded: true),
               ],
             ),
           ),

@@ -294,7 +294,7 @@ class _Knob extends StatelessWidget {
           child: FadeTransition(opacity: animation, child: child),
         ),
         child: Icon(
-          (unlocked ? AppIcons.lockOpen : AppIcons.lock).of(context),
+          adaptiveIcon(context, unlocked ? Icons.lock_open : Icons.lock),
           key: ValueKey(unlocked),
           color: _brand,
           size: 24,
