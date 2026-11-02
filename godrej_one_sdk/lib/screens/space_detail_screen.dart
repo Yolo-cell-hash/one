@@ -5,6 +5,7 @@ import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 import 'package:godrej_one_sdk/widgets/device_control_panel.dart';
 import 'package:godrej_one_sdk/widgets/glassy_container.dart';
 import 'package:godrej_one_sdk/widgets/greeting_header.dart';
+import 'package:godrej_one_sdk/widgets/home_camera_widgets.dart';
 
 const _brand = Color(0xFF810055);
 const _onBorder = Color(0xFF8DFC63);
@@ -38,30 +39,45 @@ class SpaceDetailScreen extends StatefulWidget {
   /// Pushes [spaceId]'s page onto the nearest navigator — in a tab, that's
   /// the tab's own, so it opens over the current tab and back returns to
   /// it. With [deviceName], opens straight onto that device's controls.
+  /// With [animate] off it appears at once — for arriving somewhere directly,
+  /// rather than Home sliding away first; back still animates.
   static void open(
     BuildContext context, {
     required String spaceId,
     String? deviceName,
     required String name,
     required String asset,
+    bool animate = true,
   }) {
     final space = demoSpaces.where((s) => s.id == spaceId).firstOrNull;
     if (space == null) return;
     final device = space.devices.where((d) => d.name == deviceName).firstOrNull;
+    Widget builder(BuildContext _) => SpaceDetailScreen(
+      space: space,
+      name: name,
+      asset: asset,
+      initialDevice: device,
+    );
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => SpaceDetailScreen(
-          space: space,
-          name: name,
-          asset: asset,
-          initialDevice: device,
-        ),
-      ),
+      animate
+          ? MaterialPageRoute<void>(builder: builder)
+          : _InstantOpenRoute<void>(builder: builder),
     );
   }
 
   @override
   State<SpaceDetailScreen> createState() => _SpaceDetailScreenState();
+}
+
+/// Shows its page immediately, and leaves with the usual back transition.
+class _InstantOpenRoute<T> extends MaterialPageRoute<T> {
+  _InstantOpenRoute({required super.builder});
+
+  @override
+  Duration get transitionDuration => Duration.zero;
+
+  @override
+  Duration get reverseTransitionDuration => const Duration(milliseconds: 300);
 }
 
 class _SpaceDetailScreenState extends State<SpaceDetailScreen> {
@@ -130,13 +146,15 @@ class _SpaceDetailScreenState extends State<SpaceDetailScreen> {
                   subtitle: 'Your space',
                   trailing: Row(
                     children: [
-                      _HeaderButton(
-                        image: 'images/camera_landing_icon.png',
+                      CameraButton(
                         onTap: () =>
                             showElegantToast(context, 'Cameras coming soon'),
                       ),
                       const SizedBox(width: 14),
-                      _HeaderButton(image: 'images/chevron.png', onTap: () {}),
+                      _HeaderButton(
+                        image: 'images/chevron.png',
+                        onTap: () => showElegantToast(context, 'Coming soon'),
+                      ),
                     ],
                   ),
                 ),

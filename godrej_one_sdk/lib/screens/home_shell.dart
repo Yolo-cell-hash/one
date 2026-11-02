@@ -21,10 +21,18 @@ import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
 /// {id, icon, tooltip} in the app; nothing here can drift out of sync with
 /// it.
 class HomeShell extends StatefulWidget {
-  const HomeShell({super.key, required this.name, required this.asset});
+  const HomeShell({
+    super.key,
+    required this.name,
+    required this.asset,
+    this.openVdbOnStart = false,
+  });
 
   final String name;
   final String asset;
+
+  /// Opens the Video Door Bell over the Home tab on arrival.
+  final bool openVdbOnStart;
 
   @override
   State<HomeShell> createState() => _HomeShellState();
@@ -39,12 +47,16 @@ class _HomeShellState extends State<HomeShell> {
     _tabs = [
       TabNavigator(
         tabId: 'home',
-        root: HomeScreen(name: widget.name, asset: widget.asset),
+        root: HomeScreen(
+          name: widget.name,
+          asset: widget.asset,
+          openVdbOnStart: widget.openVdbOnStart,
+        ),
       ),
       const ActivityTrailsScreen(),
       const AddDevicesScreen(),
       MySpacesScreen(name: widget.name, asset: widget.asset),
-      const CustomizeScreen(),
+      const TabNavigator(tabId: 'customize', root: CustomizeScreen()),
     ];
   }
 

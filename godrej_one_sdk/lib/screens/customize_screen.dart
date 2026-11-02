@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/cupertino.dart';
 
+import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 import 'package:godrej_one_sdk/widgets/search_bar_widget.dart';
 import 'package:godrej_one_sdk/widgets/customization_card.dart';
 import 'package:godrej_one_sdk/widgets/elevated_container.dart';
@@ -51,17 +52,20 @@ class CustomizeScreen extends StatelessWidget {
                 ),
                 Align(
                   alignment: Alignment.centerRight,
-                  child: Container(
-                    decoration: BoxDecoration(
-                      color: Colors.grey,
-                      borderRadius: BorderRadius.circular(22.0),
-                    ),
-                    child: const Padding(
-                      padding: EdgeInsets.all(8.0),
-                      child: Icon(
-                        Icons.more_vert_rounded,
-                        size: 22,
-                        color: _brand,
+                  child: GestureDetector(
+                    onTap: () => showElegantToast(context, 'Coming soon'),
+                    child: Container(
+                      decoration: BoxDecoration(
+                        color: Colors.grey,
+                        borderRadius: BorderRadius.circular(22.0),
+                      ),
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.more_vert_rounded,
+                          size: 22,
+                          color: _brand,
+                        ),
                       ),
                     ),
                   ),

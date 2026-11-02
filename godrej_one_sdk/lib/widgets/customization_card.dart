@@ -4,6 +4,7 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
+import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 
 class CustomizationCard extends StatefulWidget {
   const CustomizationCard({
@@ -107,34 +108,40 @@ class _CustomizationCardState extends State<CustomizationCard> {
               ),
             ],
           ),
-          Container(
-            decoration: BoxDecoration(
-              color: isAdded ? _brand.withValues(alpha: 0.12) : Colors.grey,
-              borderRadius: BorderRadius.circular(20.0),
+          GestureDetector(
+            onTap: () => showElegantToast(
+              context,
+              isAdded ? 'Already added' : 'Coming soon',
             ),
-            padding: const EdgeInsets.symmetric(
-              horizontal: 20.0,
-              vertical: 10.0,
-            ),
-            margin: const EdgeInsets.only(left: 20.0),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (isAdded) ...[
-                  const Icon(Icons.check, size: 16, color: _brand),
-                  const SizedBox(width: 6),
-                ],
-                Text(
-                  isAdded ? 'Added' : 'Add',
-                  style: const TextStyle(
-                    fontSize: 19,
-                    color: _brand,
-                    fontFamily: "GEG",
-                    package: 'godrej_one_sdk',
-                    fontWeight: FontWeight.w500,
+            child: Container(
+              decoration: BoxDecoration(
+                color: isAdded ? _brand.withValues(alpha: 0.12) : Colors.grey,
+                borderRadius: BorderRadius.circular(20.0),
+              ),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 20.0,
+                vertical: 10.0,
+              ),
+              margin: const EdgeInsets.only(left: 20.0),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (isAdded) ...[
+                    const Icon(Icons.check, size: 16, color: _brand),
+                    const SizedBox(width: 6),
+                  ],
+                  Text(
+                    isAdded ? 'Added' : 'Add',
+                    style: const TextStyle(
+                      fontSize: 19,
+                      color: _brand,
+                      fontFamily: "GEG",
+                      package: 'godrej_one_sdk',
+                      fontWeight: FontWeight.w500,
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ],

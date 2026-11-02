@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:math' as math;
+import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -10,7 +11,10 @@ const _brand = Color(0xFF810055);
 const _armedGreen = Color(0xFF22C55E);
 const _failedRed = Color(0xFFEF4444);
 
+const _doors = ['Back door', 'Front door', 'Balcony door'];
+
 const _trackHeight = 75.0;
+const _dismissTravel = 140.0;
 const _knobSize = 65.0;
 const _knobInsetX = 7.0;
 const _knobInsetY = 5.0;
@@ -39,17 +43,133 @@ const _subtitleStyle = TextStyle(
 
 enum _Phase { idle, charging, armed, failed, unlocked, relocking }
 
+/// The landing page's door locks: one hold-and-swipe track per door, in a
+/// horizontal pager with a dots pill under it. Swiping the track changes
+/// door; only the knob unlocks.
 class LandingUnlockSlider extends StatefulWidget {
-  const LandingUnlockSlider({super.key, this.onUnlocked});
+  const LandingUnlockSlider({super.key, this.onUnlocked, this.dismissal});
 
-  final VoidCallback? onUnlocked;
+  /// Called with the door's name once it unlocks.
+  final ValueChanged<String>? onUnlocked;
+
+  /// Slides the locks off the bottom of the screen as it runs from 0 to 1.
+  /// It slides rather than fades because a live blur can't fade. The current
+  /// door is kept for when it comes back.
+  final Animation<double>? dismissal;
 
   @override
   State<LandingUnlockSlider> createState() => _LandingUnlockSliderState();
 }
 
-class _LandingUnlockSliderState extends State<LandingUnlockSlider>
-    with TickerProviderStateMixin {
+class _LandingUnlockSliderState extends State<LandingUnlockSlider> {
+  final _pages = PageController();
+  int _page = 0;
+
+  @override
+  void dispose() {
+    _pages.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 30,
+      child: AnimatedBuilder(
+        animation: widget.dismissal ?? kAlwaysDismissedAnimation,
+        builder: (_, child) {
+          final t = widget.dismissal?.value ?? 0;
+          return Visibility(
+            visible: t < 1,
+            maintainState: true,
+            child: IgnorePointer(
+              ignoring: t > 0,
+              child: Transform.translate(
+                offset: Offset(0, t * _dismissTravel),
+                child: child,
+              ),
+            ),
+          );
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            SizedBox(
+              height: _trackHeight,
+              child: PageView.builder(
+                controller: _pages,
+                itemCount: _doors.length,
+                onPageChanged: (page) => setState(() => _page = page),
+                itemBuilder: (_, i) => Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  child: _DoorLock(
+                    door: _doors[i],
+                    onUnlocked: () => widget.onUnlocked?.call(_doors[i]),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 9),
+            _PageDots(count: _doors.length, current: _page),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+/// Frosted pill holding one dot per door.
+class _PageDots extends StatelessWidget {
+  const _PageDots({required this.count, required this.current});
+
+  final int count;
+  final int current;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 15,
+      padding: const EdgeInsets.symmetric(horizontal: 4),
+      decoration: BoxDecoration(
+        color: const Color(0xFFD9E0EE).withValues(alpha: 0.7),
+        borderRadius: BorderRadius.circular(7.5),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          for (var i = 0; i < count; i++)
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: 9,
+              height: 9,
+              margin: const EdgeInsets.symmetric(horizontal: 2),
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: i == current
+                    ? Colors.white
+                    : Colors.white.withValues(alpha: 0.5),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+/// One door's hold-and-swipe track.
+class _DoorLock extends StatefulWidget {
+  const _DoorLock({required this.door, this.onUnlocked});
+
+  final String door;
+  final VoidCallback? onUnlocked;
+
+  @override
+  State<_DoorLock> createState() => _DoorLockState();
+}
+
+class _DoorLockState extends State<_DoorLock> with TickerProviderStateMixin {
   late final AnimationController _hold = AnimationController(
     vsync: this,
     duration: _holdDuration,
@@ -166,67 +286,72 @@ class _LandingUnlockSliderState extends State<LandingUnlockSlider>
 
   @override
   Widget build(BuildContext context) {
-    return Positioned(
-      left: 24,
-      right: 24,
-      bottom: 34,
-      height: _trackHeight,
-      child: LayoutBuilder(
-        builder: (context, constraints) {
-          final travel = _travelFor(constraints.maxWidth);
-          return AnimatedBuilder(
-            animation: Listenable.merge([_hold, _slide, _ringFade]),
-            builder: (context, _) {
-              final knobLeft = _knobInsetX + travel * _slide.value;
-              final unlocked = _phase == _Phase.unlocked;
-              return Stack(
-                clipBehavior: Clip.none,
-                children: [
-                  const Positioned.fill(
-                    child: CustomPaint(painter: _GlassTrackPainter()),
-                  ),
-                  Positioned(
-                    left: 0,
-                    top: 0,
-                    bottom: 0,
-                    width: knobLeft + _knobSize + _knobInsetX,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: _armedGreen.withValues(
-                          alpha: 0.16 * (_slide.value * 4).clamp(0.0, 1.0),
-                        ),
-                        borderRadius: BorderRadius.circular(_trackHeight / 2),
-                      ),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final travel = _travelFor(constraints.maxWidth);
+        return AnimatedBuilder(
+          animation: Listenable.merge([_hold, _slide, _ringFade]),
+          builder: (context, _) {
+            final knobLeft = _knobInsetX + travel * _slide.value;
+            final unlocked = _phase == _Phase.unlocked;
+            return Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Positioned.fill(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(_trackHeight / 2),
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                      child: const CustomPaint(painter: _GlassTrackPainter()),
                     ),
                   ),
-                  Positioned(
-                    left: _knobInsetX + _knobSize + _labelGap,
-                    right: 16,
-                    top: 24,
-                    child: Opacity(
-                      opacity: (1 - _slide.value * 2).clamp(0.0, 1.0),
-                      child: const _Label(
-                        title: 'Hold and Swipe to unlock',
-                        subtitle: 'Unlock the main door',
+                ),
+                Positioned(
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  width: knobLeft + _knobSize + _knobInsetX,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: _armedGreen.withValues(
+                        alpha: 0.16 * (_slide.value * 4).clamp(0.0, 1.0),
                       ),
+                      borderRadius: BorderRadius.circular(_trackHeight / 2),
                     ),
                   ),
-                  Positioned(
-                    left: 28,
-                    right: _knobInsetX + _knobSize + _labelGap,
-                    top: 24,
-                    child: AnimatedOpacity(
-                      opacity: unlocked ? 1 : 0,
-                      duration: const Duration(milliseconds: 250),
-                      child: const _Label(
-                        title: 'Unlocked',
-                        subtitle: 'The main door is unlocked',
-                      ),
+                ),
+                Positioned(
+                  left: _knobInsetX + _knobSize + _labelGap,
+                  right: 16,
+                  top: 24,
+                  child: Opacity(
+                    opacity: (1 - _slide.value * 2).clamp(0.0, 1.0),
+                    child: _Label(
+                      title: widget.door,
+                      subtitle: 'Hold and swipe to unlock',
                     ),
                   ),
-                  Positioned(
-                    left: knobLeft - _knobInsetY,
-                    top: 0,
+                ),
+                Positioned(
+                  left: 28,
+                  right: _knobInsetX + _knobSize + _labelGap,
+                  top: 24,
+                  child: AnimatedOpacity(
+                    opacity: unlocked ? 1 : 0,
+                    duration: const Duration(milliseconds: 250),
+                    child: _Label(
+                      title: 'Unlocked',
+                      subtitle: 'The ${widget.door.toLowerCase()} is unlocked',
+                    ),
+                  ),
+                ),
+                Positioned(
+                  left: knobLeft - _knobInsetY,
+                  top: 0,
+                  // Claims horizontal drags that start on the knob, so
+                  // sliding it can't also turn the page behind it.
+                  child: GestureDetector(
+                    onHorizontalDragStart: (_) {},
                     child: Listener(
                       behavior: HitTestBehavior.opaque,
                       onPointerDown: _onPointerDown,
@@ -248,12 +373,12 @@ class _LandingUnlockSliderState extends State<LandingUnlockSlider>
                       ),
                     ),
                   ),
-                ],
-              );
-            },
-          );
-        },
-      ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 }
@@ -270,9 +395,9 @@ class _Knob extends StatelessWidget {
       height: _knobSize,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: const Color(0xFFF7F7F7),
+        color: Colors.white.withValues(alpha: 0.35),
         shape: BoxShape.circle,
-        border: Border.all(color: Colors.white),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.8)),
       ),
       child: AnimatedSwitcher(
         duration: const Duration(milliseconds: 250),
@@ -331,7 +456,7 @@ class _GlassTrackPainter extends CustomPainter {
     );
     canvas.drawRRect(
       shape,
-      Paint()..color = Colors.white.withValues(alpha: 0.93),
+      Paint()..color = Colors.white.withValues(alpha: 0.62),
     );
 
     // Soft inner shade on the top/left edge, like the frosted glass in the design.

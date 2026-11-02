@@ -23,7 +23,7 @@ class _MyAppState extends State<MyApp> {
   Widget build(BuildContext context) {
     return MultiProvider(
       providers: [ChangeNotifierProvider(create: (_) => BottomBarProvider())],
-      child: MaterialApp(home: SplashScreen()),
+      child: MaterialApp(title: 'Godrej ONE', home: SplashScreen()),
     );
   }
 }

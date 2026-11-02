@@ -1,5 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
+
+import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 
 class HomeCameraWidgets extends StatefulWidget {
   const HomeCameraWidgets({super.key, required this.status, this.onHomeTap});
@@ -21,14 +24,8 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
         children: [
           GestureDetector(onTap: widget.onHomeTap, child: const _HomeButton()),
           const SizedBox(height: 14),
-          GestureDetector(
-            onTap: () {},
-            child: Image.asset(
-              'images/camera_landing_icon.png',
-              package: 'godrej_one_sdk',
-              width: 34,
-              height: 34,
-            ),
+          CameraButton(
+            onTap: () => showElegantToast(context, 'Cameras coming soon'),
           ),
         ],
       );
@@ -38,7 +35,7 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
           GestureDetector(onTap: widget.onHomeTap, child: const _HomeButton()),
           const SizedBox(width: 14),
           GestureDetector(
-            onTap: () {},
+            onTap: () => showElegantToast(context, 'Coming soon'),
             child: Image.asset(
               'images/chevron.png',
               package: 'godrej_one_sdk',
@@ -49,6 +46,35 @@ class _HomeCameraWidgetsState extends State<HomeCameraWidgets> {
         ],
       );
     }
+  }
+}
+
+/// Round light-grey 34px button with the brand camera glyph — the landing
+/// page's and a space's header camera button.
+class CameraButton extends StatelessWidget {
+  const CameraButton({super.key, this.onTap});
+
+  final VoidCallback? onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 34,
+        height: 34,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: Color(0xFFE4E4E2),
+          shape: BoxShape.circle,
+        ),
+        child: SvgPicture.asset(
+          'images/svgs/camera.svg',
+          package: 'godrej_one_sdk',
+          width: 18,
+        ),
+      ),
+    );
   }
 }
 

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
+
 /// Centered brand-colored page title with the round "more" button pinned to
 /// the right — the top of the plain white tabs (Activity Trail and its
 /// device detail page).
@@ -34,21 +36,28 @@ class ScreenHeader extends StatelessWidget {
             ),
             Align(
               alignment: Alignment.centerRight,
-              child: DecoratedBox(
-                decoration: BoxDecoration(
-                  color: const Color(0xFFE6E6E6),
-                  shape: BoxShape.circle,
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.08),
-                      blurRadius: 6,
-                      offset: const Offset(0, 2),
+              child: GestureDetector(
+                onTap: () => showElegantToast(context, 'Coming soon'),
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFE6E6E6),
+                    shape: BoxShape.circle,
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withValues(alpha: 0.08),
+                        blurRadius: 6,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: const Padding(
+                    padding: EdgeInsets.all(8.0),
+                    child: Icon(
+                      Icons.more_vert_rounded,
+                      size: 22,
+                      color: _brand,
                     ),
-                  ],
-                ),
-                child: const Padding(
-                  padding: EdgeInsets.all(8.0),
-                  child: Icon(Icons.more_vert_rounded, size: 22, color: _brand),
+                  ),
                 ),
               ),
             ),

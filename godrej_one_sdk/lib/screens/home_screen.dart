@@ -8,10 +8,18 @@ import 'package:godrej_one_sdk/widgets/glassy_container.dart';
 import 'package:godrej_one_sdk/widgets/glassy_scrollbar.dart';
 
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({super.key, required this.name, required this.asset});
+  const HomeScreen({
+    super.key,
+    required this.name,
+    required this.asset,
+    this.openVdbOnStart = false,
+  });
 
   final String name;
   final String asset;
+
+  /// Opens the Video Door Bell over Home right away, so back lands on Home.
+  final bool openVdbOnStart;
 
   @override
   State<HomeScreen> createState() => _HomeScreenState();
@@ -21,6 +29,17 @@ class _HomeScreenState extends State<HomeScreen> {
   final ScrollController _scrollController = ScrollController();
 
   @override
+  void initState() {
+    super.initState();
+    if (widget.openVdbOnStart) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) return;
+        _openSpace(context, 'entrance', device: 'VDB', animate: false);
+      });
+    }
+  }
+
+  @override
   void dispose() {
     _scrollController.dispose();
     super.dispose();
@@ -28,13 +47,19 @@ class _HomeScreenState extends State<HomeScreen> {
 
   /// Opens a room's page — straight onto [device] when given — over the
   /// Home tab; back returns here.
-  void _openSpace(BuildContext context, String spaceId, {String? device}) {
+  void _openSpace(
+    BuildContext context,
+    String spaceId, {
+    String? device,
+    bool animate = true,
+  }) {
     SpaceDetailScreen.open(
       context,
       spaceId: spaceId,
       deviceName: device,
       name: widget.name,
       asset: widget.asset,
+      animate: animate,
     );
   }
 

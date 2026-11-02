@@ -50,6 +50,7 @@ flutter:
     - images/svgs/
     - images/spaces/
     - images/devices/
+    - images/properties/
 
   fonts:
     - family: GEG
