@@ -347,16 +347,23 @@ class _DoorLockState extends State<_DoorLock> with TickerProviderStateMixin {
                     ),
                   ),
                 ),
+                // Centred in the track's open span, left of the knob now
+                // resting at the far end.
                 Positioned(
-                  left: 28,
-                  right: _knobInsetX + _knobSize + _labelGap,
-                  top: 24,
+                  left: 0,
+                  top: 0,
+                  bottom: 0,
+                  right: _knobInsetX + _knobSize,
                   child: AnimatedOpacity(
                     opacity: unlocked ? 1 : 0,
                     duration: const Duration(milliseconds: 250),
-                    child: _Label(
-                      title: 'Unlocked',
-                      subtitle: 'The ${widget.door.toLowerCase()} is unlocked',
+                    child: Center(
+                      child: _Label(
+                        title: 'Unlocked',
+                        subtitle:
+                            'The ${widget.door.toLowerCase()} is unlocked',
+                        centered: true,
+                      ),
                     ),
                   ),
                 ),
@@ -432,19 +439,31 @@ class _Knob extends StatelessWidget {
 }
 
 class _Label extends StatelessWidget {
-  const _Label({required this.title, required this.subtitle});
+  const _Label({
+    required this.title,
+    required this.subtitle,
+    this.centered = false,
+  });
 
   final String title;
   final String subtitle;
 
+  /// Centres the lines on each other, and the block on its height.
+  final bool centered;
+
   @override
   Widget build(BuildContext context) {
+    final align = centered ? TextAlign.center : TextAlign.start;
     return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: centered
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         Text(
           title,
           style: _titleStyle,
+          textAlign: align,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
@@ -452,6 +471,7 @@ class _Label extends StatelessWidget {
         Text(
           subtitle,
           style: _subtitleStyle,
+          textAlign: align,
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),
