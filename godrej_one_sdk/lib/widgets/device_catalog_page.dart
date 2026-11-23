@@ -12,10 +12,18 @@ class DeviceCatalogPage extends StatefulWidget {
     super.key,
     required this.title,
     required this.onDeviceTap,
+    this.only,
+    this.footer,
   });
 
   final String title;
   final void Function(BuildContext context, TrailDevice device) onDeviceTap;
+
+  /// Lists only this category, without the filter chips.
+  final DeviceCategory? only;
+
+  /// Pinned under the list, above the bottom bar — e.g. "Add Device".
+  final Widget? footer;
 
   @override
   State<DeviceCatalogPage> createState() => _DeviceCatalogPageState();
@@ -25,7 +33,7 @@ class _DeviceCatalogPageState extends State<DeviceCatalogPage> {
   String _query = '';
 
   /// `null` is the "All" chip.
-  DeviceCategory? _category;
+  late DeviceCategory? _category = widget.only;
 
   void _openDevice(TrailDevice device) {
     FocusScope.of(context).unfocus();
@@ -61,17 +69,21 @@ class _DeviceCatalogPageState extends State<DeviceCatalogPage> {
             onChanged: (value) => setState(() => _query = value),
           ),
           const SizedBox(height: 22.0),
-          _CategoryChips(
-            selected: _category,
-            onSelected: (category) => setState(() => _category = category),
-          ),
-          const SizedBox(height: 18.0),
+          if (widget.only == null) ...[
+            _CategoryChips(
+              selected: _category,
+              onSelected: (category) => setState(() => _category = category),
+            ),
+            const SizedBox(height: 18.0),
+          ],
           Expanded(
             child: devices.isEmpty
                 ? const _NoDevices()
                 : ListView.builder(
                     padding: EdgeInsets.only(
-                      bottom: barHeight + media.padding.bottom + gap * 2,
+                      bottom: widget.footer != null
+                          ? gap
+                          : barHeight + media.padding.bottom + gap * 2,
                     ),
                     itemCount: devices.length,
                     itemBuilder: (context, i) => _DeviceTile(
@@ -80,6 +92,10 @@ class _DeviceCatalogPageState extends State<DeviceCatalogPage> {
                     ),
                   ),
           ),
+          if (widget.footer != null) ...[
+            widget.footer!,
+            SizedBox(height: barHeight + media.padding.bottom + gap * 1.4),
+          ],
         ],
       ),
     );

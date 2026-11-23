@@ -1,56 +1,84 @@
 import 'package:flutter/painting.dart';
 
-/// A home the resident can switch between on the landing page.
+import 'package:godrej_one_sdk/models/photo.dart';
+
+/// A home the resident can switch between on the landing page, and edit
+/// from Profile › Manage Properties.
 class Property {
   const Property({
     required this.name,
-    required this.locality,
-    required this.thumbnail,
-    required this.background,
+    required this.location,
+    required this.photo,
+    this.background,
   });
 
-  /// City shown in the properties list.
+  /// "Shrishti", "204, Hiranandani".
   final String name;
 
-  /// Neighbourhood shown under "Welcome home".
-  final String locality;
+  /// "Malabar hills, Mumbai" — neighbourhood first, then the city.
+  final String location;
 
-  /// Photo shown in the properties list row.
-  final String thumbnail;
+  /// The property's photo: its row in the lists, and the landing page
+  /// behind it unless [background] says otherwise. An asset path or a file.
+  final String photo;
 
-  /// Full-bleed photo behind the landing page.
-  final String background;
+  /// A separate full-bleed photo for the landing page, when the list photo
+  /// isn't framed for a full screen.
+  final String? background;
 
-  ImageProvider get backgroundImage =>
-      AssetImage(background, package: 'godrej_one_sdk');
+  /// The neighbourhood alone, shown under "Welcome home".
+  String get locality => location.split(',').first.trim();
 
-  /// [background] decoded small: blurring it for the frosted look is cheap,
-  /// and it can be faded in without blurring the live page behind it.
+  ImageProvider get backgroundImage => photoImage(background ?? photo);
+
+  /// [backgroundImage] decoded small: blurring it for the frosted look is
+  /// cheap, and it can be faded in without blurring the live page behind it.
   ImageProvider get frostedImage => ResizeImage(backgroundImage, width: 96);
 
-  /// [thumbnail] decoded at the size its row shows it, rather than at the
-  /// full size of the photo.
+  /// [photo] decoded at the size its row shows it, rather than at the full
+  /// size of the photo.
   ImageProvider get thumbnailImage =>
-      ResizeImage(AssetImage(thumbnail, package: 'godrej_one_sdk'), width: 420);
+      ResizeImage(photoImage(photo), width: 420);
 
-  static const all = [
+  /// A new [photo] also becomes the landing page's photo.
+  Property copyWith({String? name, String? location, String? photo}) =>
+      Property(
+        name: name ?? this.name,
+        location: location ?? this.location,
+        photo: photo ?? this.photo,
+        background: photo == null ? background : null,
+      );
+
+  Map<String, Object?> toJson() => {
+    'name': name,
+    'location': location,
+    'photo': photo,
+    'background': background,
+  };
+
+  factory Property.fromJson(Map<String, Object?> json) => Property(
+    name: json['name']! as String,
+    location: json['location']! as String,
+    photo: json['photo']! as String,
+    background: json['background'] as String?,
+  );
+
+  static const defaults = [
     Property(
-      name: 'Mumbai',
-      locality: 'Malabar hills',
-      thumbnail: 'images/properties/mumbai.png',
+      name: 'Shrishti',
+      location: 'Malabar hills, Mumbai',
+      photo: 'images/properties/mumbai.png',
       background: 'images/landing_base_bg.png',
     ),
     Property(
-      name: 'Chennai',
-      locality: 'Besant Nagar',
-      thumbnail: 'images/properties/chennai.jpg',
-      background: 'images/properties/chennai.jpg',
+      name: '204, Hiranandani',
+      location: 'Powai, Mumbai',
+      photo: 'images/properties/chennai.jpg',
     ),
     Property(
-      name: 'Kochi',
-      locality: 'Marine Drive',
-      thumbnail: 'images/properties/kochi.webp',
-      background: 'images/properties/kochi.webp',
+      name: '1603, Vaibhav',
+      location: 'Vikhroli, Mumbai',
+      photo: 'images/properties/kochi.webp',
     ),
   ];
 }

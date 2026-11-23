@@ -1,9 +1,14 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 const _brand = Color(0xFF810055);
 const _onBorder = Color(0xFF8DFC63);
 const _offBorder = Color(0xFFD9D9D9);
+
+const _text = TextStyle(
+  color: _brand,
+  fontFamily: 'GEG',
+  package: 'godrej_one_sdk',
+);
 
 /// A pill toggle matching the app's "active = green outline" language (the
 /// same treatment as the armed-away banner and the locked-door status):
@@ -17,29 +22,33 @@ class _AiModeToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: () => onChanged(!value),
-      child: AnimatedContainer(
-        duration: const Duration(milliseconds: 200),
-        curve: Curves.easeOut,
-        width: 52,
-        height: 30,
-        padding: const EdgeInsets.all(3),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: value ? _onBorder : _offBorder,
-            width: value ? 2 : 1,
-          ),
-        ),
-        child: AnimatedAlign(
+    return Semantics(
+      toggled: value,
+      label: 'AI Mode',
+      child: GestureDetector(
+        onTap: () => onChanged(!value),
+        child: AnimatedContainer(
           duration: const Duration(milliseconds: 200),
           curve: Curves.easeOut,
-          alignment: value ? Alignment.centerRight : Alignment.centerLeft,
-          child: const DecoratedBox(
-            decoration: BoxDecoration(color: _brand, shape: BoxShape.circle),
-            child: SizedBox(width: 22, height: 22),
+          width: 40,
+          height: 18,
+          padding: const EdgeInsets.all(2),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(9),
+            border: Border.all(
+              color: value ? _onBorder : _offBorder,
+              width: value ? 1.5 : 1,
+            ),
+          ),
+          child: AnimatedAlign(
+            duration: const Duration(milliseconds: 200),
+            curve: Curves.easeOut,
+            alignment: value ? Alignment.centerRight : Alignment.centerLeft,
+            child: const DecoratedBox(
+              decoration: BoxDecoration(color: _brand, shape: BoxShape.circle),
+              child: SizedBox(width: 13, height: 13),
+            ),
           ),
         ),
       ),
@@ -47,8 +56,10 @@ class _AiModeToggle extends StatelessWidget {
   }
 }
 
+/// Soft raised card on the Navigation page: "How does it work?" when
+/// [toggleNeeded] is false, the AI Mode switch when it's true.
 class ElevatedContainer extends StatefulWidget {
-  ElevatedContainer({super.key, required this.toggleNeeded});
+  const ElevatedContainer({super.key, required this.toggleNeeded});
 
   final bool toggleNeeded;
 
@@ -57,109 +68,69 @@ class ElevatedContainer extends StatefulWidget {
 }
 
 class _ElevatedContainerState extends State<ElevatedContainer> {
-  bool _isVisible = true;
-  bool _isOn = true;
+  bool _aiMode = false;
 
   @override
   Widget build(BuildContext context) {
-    if (widget.toggleNeeded) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Material(
-          elevation: 5,
-          color: Colors.white,
-          shadowColor: Colors.black26,
-          borderRadius: BorderRadius.circular(12),
-          child: Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(16),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                Expanded(
-                  child: SelectableText(
-                    'Turn on the AI Mode so that the app identifies the usage and alters the navigation bar according to your frequently used feature.',
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: _brand,
-                      fontFamily: "GEG",
-                      package: 'godrej_one_sdk',
-                      fontWeight: FontWeight.w300,
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 26),
+      child: Container(
+        width: double.infinity,
+        padding: widget.toggleNeeded
+            ? const EdgeInsets.fromLTRB(14, 26, 20, 26)
+            : const EdgeInsets.fromLTRB(13, 16, 13, 18),
+        decoration: BoxDecoration(
+          color: const Color(0xFFF6F6F6),
+          borderRadius: BorderRadius.circular(widget.toggleNeeded ? 30 : 26),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.07),
+              blurRadius: 18,
+              offset: const Offset(0, 6),
+            ),
+          ],
+        ),
+        child: widget.toggleNeeded
+            ? Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      'Turn on the AI Mode so that the app identifies the '
+                      'usage and alters the navigation bar according to '
+                      'your frequently used feature.',
+                      style: _text.copyWith(fontSize: 12.5, height: 1.3),
                     ),
                   ),
-                ),
-                const SizedBox(width: 16),
-                _AiModeToggle(
-                  value: _isOn,
-                  onChanged: (value) => setState(() => _isOn = value),
-                ),
-              ],
-            ),
-          ),
-        ),
-      );
-    } else {
-      return Visibility(
-        visible: _isVisible,
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: Material(
-            elevation: 5,
-            color: Colors.white,
-            shadowColor: Colors.black26,
-            borderRadius: BorderRadius.circular(12),
-            child: Stack(
-              children: [
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'How does it work? ',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: _brand,
-                          fontFamily: "GEG",
-                          package: 'godrej_one_sdk',
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                      SelectableText(
-                        'Add upto 3 icons to your dynamic navigation toolbar & create a personalised shortcut menu for quick, easy access to your favorite features. ',
-                        style: const TextStyle(
-                          fontSize: 16,
-                          color: _brand,
-                          fontFamily: "GEG",
-                          package: 'godrej_one_sdk',
-                          fontWeight: FontWeight.w300,
-                        ),
-                      ),
-                    ],
+                  const SizedBox(width: 18),
+                  _AiModeToggle(
+                    value: _aiMode,
+                    onChanged: (value) => setState(() => _aiMode = value),
                   ),
-                ),
-                Positioned(
-                  top: 8,
-                  right: 8,
-                  child: GestureDetector(
-                    onTap: () => setState(() => _isVisible = false),
-                    child: Container(
-                      decoration: const BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Color(0xFFF5F5F5),
-                      ),
-                      padding: const EdgeInsets.all(4),
-                      child: const Icon(Icons.close, size: 18, color: _brand),
+                ],
+              )
+            : Text.rich(
+                TextSpan(
+                  style: _text.copyWith(
+                    fontSize: 12.5,
+                    height: 1.3,
+                    fontStyle: FontStyle.italic,
+                    fontWeight: FontWeight.w300,
+                  ),
+                  children: const [
+                    TextSpan(
+                      text: 'How does it work?\n',
+                      style: TextStyle(fontWeight: FontWeight.w700),
                     ),
-                  ),
+                    TextSpan(
+                      text:
+                          'Add up to 3 icons to your dynamic navigation '
+                          'toolbar and create a personalized shortcut menu '
+                          'for quick, easy access to your favorite features.',
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          ),
-        ),
-      );
-    }
+              ),
+      ),
+    );
   }
 }

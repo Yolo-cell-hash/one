@@ -10,12 +10,16 @@ class BrandPillButton extends StatelessWidget {
     required this.onTap,
     this.fontSize = 16,
     this.padding = const EdgeInsets.symmetric(horizontal: 28, vertical: 10),
+    this.centered = false,
   });
 
   final String label;
   final VoidCallback onTap;
   final double fontSize;
   final EdgeInsets padding;
+
+  /// Centres the label in a button given a fixed width.
+  final bool centered;
 
   @override
   Widget build(BuildContext context) {
@@ -29,6 +33,7 @@ class BrandPillButton extends StatelessWidget {
           padding: padding,
           child: Text(
             label,
+            textAlign: centered ? TextAlign.center : null,
             style: TextStyle(
               fontSize: fontSize,
               color: Colors.white,

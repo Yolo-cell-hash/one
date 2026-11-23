@@ -16,12 +16,14 @@ class LandingPropertiesPanel extends StatelessWidget {
     required this.selectedIndex,
     required this.onSelect,
     required this.onAddProperty,
+    required this.onClose,
   });
 
   final List<Property> properties;
   final int selectedIndex;
   final ValueChanged<int> onSelect;
   final VoidCallback onAddProperty;
+  final VoidCallback onClose;
 
   @override
   Widget build(BuildContext context) {
@@ -37,14 +39,39 @@ class LandingPropertiesPanel extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          const Text(
-            'Properties',
-            style: TextStyle(
-              fontSize: 22,
-              color: _brand,
-              fontFamily: 'GEG',
-              package: 'godrej_one_sdk',
-            ),
+          Stack(
+            alignment: Alignment.center,
+            children: [
+              const Text(
+                'Properties',
+                style: TextStyle(
+                  fontSize: 22,
+                  color: _brand,
+                  fontFamily: 'GEG',
+                  package: 'godrej_one_sdk',
+                ),
+              ),
+              Align(
+                alignment: Alignment.centerRight,
+                child: Semantics(
+                  button: true,
+                  label: 'Close',
+                  child: GestureDetector(
+                    onTap: onClose,
+                    child: Container(
+                      width: 30,
+                      height: 30,
+                      margin: const EdgeInsets.only(right: 6),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(Icons.close, size: 18, color: _brand),
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: 18),
           for (var i = 0; i < properties.length; i++) ...[
@@ -86,7 +113,7 @@ class _PropertyRow extends StatelessWidget {
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
         height: 97,
-        padding: const EdgeInsets.fromLTRB(36, 8, 12, 8),
+        padding: const EdgeInsets.fromLTRB(10, 8, 12, 8),
         decoration: BoxDecoration(
           color: const Color(0xFFF4F4F4),
           borderRadius: BorderRadius.circular(30),
@@ -116,18 +143,36 @@ class _PropertyRow extends StatelessWidget {
                 ),
               ),
             ),
-            const SizedBox(width: 24),
+            const SizedBox(width: 14),
             Expanded(
-              child: Text(
-                property.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: const TextStyle(
-                  fontSize: 17,
-                  color: _brand,
-                  fontFamily: 'GEG',
-                  package: 'godrej_one_sdk',
-                ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    property.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      color: _brand,
+                      fontFamily: 'GEG',
+                      package: 'godrej_one_sdk',
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    property.location,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: _brand,
+                      fontFamily: 'GEG',
+                      package: 'godrej_one_sdk',
+                    ),
+                  ),
+                ],
               ),
             ),
           ],

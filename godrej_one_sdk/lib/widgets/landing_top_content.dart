@@ -2,6 +2,7 @@ import 'dart:ui' show ImageFilter;
 
 import 'package:flutter/material.dart';
 
+import 'package:godrej_one_sdk/models/photo.dart';
 import 'package:godrej_one_sdk/service/user_name_onboarding_handler.dart';
 import 'package:godrej_one_sdk/widgets/user_circle_avatar_onboarding.dart';
 
@@ -55,7 +56,7 @@ class LandingTopContent extends StatelessWidget {
           height: 131,
           padding: const EdgeInsets.fromLTRB(21, 0, 13, 0),
           decoration: BoxDecoration(
-            color: Colors.white.withValues(alpha: 0.6),
+            color: Colors.white.withValues(alpha: 0.67),
             borderRadius: BorderRadius.circular(36),
             border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
           ),
@@ -144,7 +145,7 @@ class _ProfileCapsule extends StatelessWidget {
           UserCircleAvatarOnboarding(
             key: avatarKey,
             name: user.name,
-            image: AssetImage(user.image, package: 'godrej_one_sdk'),
+            image: photoImage(user.image),
             selected: true,
             onTap: onAvatarTap,
           ),

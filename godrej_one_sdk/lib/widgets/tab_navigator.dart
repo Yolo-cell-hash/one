@@ -71,8 +71,12 @@ class _TabNavigatorState extends State<TabNavigator> {
 
     return PopScope<Object?>(
       canPop: !isActiveTab || (_isHome && !_nestedCanPop),
+      // Every tab's scope hears a blocked pop, the hidden ones included —
+      // only the tab on screen may act on it.
       onPopInvokedWithResult: (didPop, _) {
-        if (!didPop) _handleBack();
+        final active =
+            context.read<BottomBarProvider>().selectedId == widget.tabId;
+        if (!didPop && active) _handleBack();
       },
       // Tracks whether the nested stack has something to pop, the same
       // way NavigatorPopHandler does.

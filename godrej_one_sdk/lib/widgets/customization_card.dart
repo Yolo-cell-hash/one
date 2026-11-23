@@ -1,146 +1,122 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
 import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
 import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
 
-class CustomizationCard extends StatefulWidget {
+/// One feature on the Navigation page: its glyph, name and a one-line
+/// description, with a grey "Add" pill — "Added" once it's in the bar.
+class CustomizationCard extends StatelessWidget {
   const CustomizationCard({
     super.key,
     required this.title,
     required this.subtitle,
-    this.card_icon,
-    this.cardImage,
-    this.cardImagePackage = 'godrej_one_sdk',
-    required this.hasIcon,
     required this.id,
+    this.icon,
+    this.cardImage,
   });
 
   final String title;
-  final String id;
   final String subtitle;
-  final IconData? card_icon;
+
+  /// The feature's id in [BottomBarProvider].
+  final String id;
+
+  /// The glyph: an [IconData], or an SVG / image asset in [cardImage].
+  final IconData? icon;
   final String? cardImage;
-  final String? cardImagePackage;
-  final bool hasIcon;
 
-  @override
-  State<CustomizationCard> createState() => _CustomizationCardState();
-}
-
-class _CustomizationCardState extends State<CustomizationCard> {
   static const _brand = Color(0xFF810055);
+
+  Widget _leading() {
+    final asset = cardImage;
+    if (asset == null) return Icon(icon, color: _brand, size: 26);
+    if (asset.toLowerCase().endsWith('.svg')) {
+      return SvgPicture.asset(
+        asset,
+        package: 'godrej_one_sdk',
+        width: 24,
+        height: 24,
+        colorFilter: const ColorFilter.mode(_brand, BlendMode.srcIn),
+      );
+    }
+    return Image.asset(asset, package: 'godrej_one_sdk', width: 24, height: 24);
+  }
 
   @override
   Widget build(BuildContext context) {
-    Widget leading;
-    if (widget.cardImage != null && widget.cardImage!.isNotEmpty) {
-      final asset = widget.cardImage!;
-      if (asset.toLowerCase().endsWith('.svg')) {
-        leading = SvgPicture.asset(
-          asset,
-          package: widget.cardImagePackage,
-          width: 24.0,
-          height: 24.0,
-          fit: BoxFit.contain,
-          color: _brand,
-        );
-      } else {
-        leading = Image.asset(
-          asset,
-          package: widget.cardImagePackage,
-          width: 24.0,
-          height: 24.0,
-          fit: BoxFit.contain,
-        );
-      }
-    } else if (widget.card_icon != null && widget.hasIcon) {
-      leading = Icon(widget.card_icon, color: _brand, size: 24.0);
-    } else {
-      leading = const SizedBox(width: 24.0, height: 24.0);
-    }
-
     // A card's own id is checked against the bar's live item list —
     // BottomBarProvider is the single source of truth for what's actually
     // in the bar (see bottom_bar_provider.dart), so this never drifts from
     // what the bottom bar itself shows.
-    final isAdded =
-        context.watch<BottomBarProvider>().indexOfId(widget.id) != null;
+    final isAdded = context.select<BottomBarProvider, bool>(
+      (bar) => bar.indexOfId(id) != null,
+    );
 
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 30.0, vertical: 8.0),
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(40, 4.5, 34, 4.5),
       child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.start,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              leading,
-              const SizedBox(width: 20.0),
-              Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.title,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      color: Colors.black,
-                      fontFamily: "GEG",
-                      package: 'godrej_one_sdk',
-                      fontWeight: FontWeight.w500,
-                    ),
+          SizedBox(width: 26, child: Center(child: _leading())),
+          const SizedBox(width: 22),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: Colors.black,
+                    fontFamily: 'GEG',
+                    package: 'godrej_one_sdk',
                   ),
-                  Text(
-                    widget.subtitle,
-                    style: const TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
-                      fontFamily: "GEG",
-                      package: 'godrej_one_sdk',
-                      fontWeight: FontWeight.w300,
-                    ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    color: Color(0xFF8A8A8A),
+                    fontFamily: 'GEG',
+                    package: 'godrej_one_sdk',
                   ),
-                ],
-              ),
-            ],
-          ),
-          GestureDetector(
-            onTap: () => showElegantToast(
-              context,
-              isAdded ? 'Already added' : 'Coming soon',
+                ),
+              ],
             ),
-            child: Container(
-              decoration: BoxDecoration(
-                color: isAdded ? _brand.withValues(alpha: 0.12) : Colors.grey,
-                borderRadius: BorderRadius.circular(20.0),
+          ),
+          const SizedBox(width: 12),
+          Semantics(
+            button: true,
+            label: isAdded ? '$title added' : 'Add $title',
+            excludeSemantics: true,
+            child: GestureDetector(
+              onTap: () => showElegantToast(
+                context,
+                isAdded ? 'Already added' : 'Coming soon',
               ),
-              padding: const EdgeInsets.symmetric(
-                horizontal: 20.0,
-                vertical: 10.0,
-              ),
-              margin: const EdgeInsets.only(left: 20.0),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (isAdded) ...[
-                    const Icon(Icons.check, size: 16, color: _brand),
-                    const SizedBox(width: 6),
-                  ],
-                  Text(
-                    isAdded ? 'Added' : 'Add',
-                    style: const TextStyle(
-                      fontSize: 19,
-                      color: _brand,
-                      fontFamily: "GEG",
-                      package: 'godrej_one_sdk',
-                      fontWeight: FontWeight.w500,
-                    ),
+              child: Container(
+                width: 82,
+                height: 38,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFDCDCDC),
+                  borderRadius: BorderRadius.circular(19),
+                ),
+                child: Text(
+                  isAdded ? 'Added' : 'Add',
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: _brand,
+                    fontFamily: 'GEG',
+                    package: 'godrej_one_sdk',
                   ),
-                ],
+                ),
               ),
             ),
           ),

@@ -20,18 +20,9 @@ const _offlineDot = Color(0xFFBDBDBD);
 /// Pushed onto the My Spaces tab's own navigator, so the shell's bottom bar
 /// stays in place above it.
 class SpaceDetailScreen extends StatefulWidget {
-  const SpaceDetailScreen({
-    super.key,
-    required this.space,
-    required this.name,
-    required this.asset,
-    this.initialDevice,
-  });
+  const SpaceDetailScreen({super.key, required this.space, this.initialDevice});
 
   final Space space;
-
-  /// User's name and avatar, for the header.
-  final String name, asset;
 
   /// Opens straight onto this device's controls (deep links from Home).
   final SpaceDevice? initialDevice;
@@ -45,24 +36,29 @@ class SpaceDetailScreen extends StatefulWidget {
     BuildContext context, {
     required String spaceId,
     String? deviceName,
-    required String name,
-    required String asset,
     bool animate = true,
   }) {
-    final space = demoSpaces.where((s) => s.id == spaceId).firstOrNull;
-    if (space == null) return;
-    final device = space.devices.where((d) => d.name == deviceName).firstOrNull;
-    Widget builder(BuildContext _) => SpaceDetailScreen(
-      space: space,
-      name: name,
-      asset: asset,
-      initialDevice: device,
-    );
+    final page = forDevice(spaceId: spaceId, deviceName: deviceName);
+    if (page == null) return;
+    Widget builder(BuildContext _) => page;
     Navigator.of(context).push(
       animate
           ? MaterialPageRoute<void>(builder: builder)
           : _InstantOpenRoute<void>(builder: builder),
     );
+  }
+
+  /// [spaceId]'s page, opened onto [deviceName] when given — for callers
+  /// that push it with a transition of their own. `null` for an unknown
+  /// space.
+  static SpaceDetailScreen? forDevice({
+    required String spaceId,
+    String? deviceName,
+  }) {
+    final space = demoSpaces.where((s) => s.id == spaceId).firstOrNull;
+    if (space == null) return null;
+    final device = space.devices.where((d) => d.name == deviceName).firstOrNull;
+    return SpaceDetailScreen(space: space, initialDevice: device);
   }
 
   @override
@@ -141,8 +137,6 @@ class _SpaceDetailScreenState extends State<SpaceDetailScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 GreetingHeader(
-                  name: widget.name,
-                  asset: widget.asset,
                   subtitle: 'Your space',
                   trailing: Row(
                     children: [

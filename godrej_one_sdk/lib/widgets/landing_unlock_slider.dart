@@ -301,7 +301,7 @@ class _DoorLockState extends State<_DoorLock> with TickerProviderStateMixin {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(_trackHeight / 2),
                     child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+                      filter: ImageFilter.blur(sigmaX: 26, sigmaY: 26),
                       child: const CustomPaint(painter: _GlassTrackPainter()),
                     ),
                   ),
@@ -317,6 +317,21 @@ class _DoorLockState extends State<_DoorLock> with TickerProviderStateMixin {
                         alpha: 0.16 * (_slide.value * 4).clamp(0.0, 1.0),
                       ),
                       borderRadius: BorderRadius.circular(_trackHeight / 2),
+                    ),
+                  ),
+                ),
+                // The hold's progress, round the whole track: the finger
+                // covers the knob's own ring, but not the track's edge.
+                Positioned.fill(
+                  child: IgnorePointer(
+                    child: CustomPaint(
+                      painter: _TrackProgressPainter(
+                        progress: _hold.value,
+                        color: _phase == _Phase.failed
+                            ? _failedRed
+                            : _armedGreen,
+                        opacity: _ringFade.value,
+                      ),
                     ),
                   ),
                 ),
@@ -456,7 +471,7 @@ class _GlassTrackPainter extends CustomPainter {
     );
     canvas.drawRRect(
       shape,
-      Paint()..color = Colors.white.withValues(alpha: 0.62),
+      Paint()..color = Colors.white.withValues(alpha: 0.64),
     );
 
     // Soft inner shade on the top/left edge, like the frosted glass in the design.
@@ -467,7 +482,7 @@ class _GlassTrackPainter extends CustomPainter {
       Paint()
         ..style = PaintingStyle.stroke
         ..strokeWidth = 6
-        ..color = Colors.black.withValues(alpha: 0.07)
+        ..color = Colors.black.withValues(alpha: 0.035)
         ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 3),
     );
     canvas.restore();
@@ -483,6 +498,73 @@ class _GlassTrackPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(_GlassTrackPainter oldDelegate) => false;
+}
+
+/// Fills the track's outline as [progress] runs from 0 to 1: from the
+/// knob's end, along the top and bottom edges at once, meeting at the far
+/// end.
+class _TrackProgressPainter extends CustomPainter {
+  const _TrackProgressPainter({
+    required this.progress,
+    required this.color,
+    required this.opacity,
+  });
+
+  final double progress;
+  final Color color;
+  final double opacity;
+
+  static const _stroke = 3.0;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    if (opacity == 0) return;
+    final rect = (Offset.zero & size).deflate(_stroke / 2);
+    final r = rect.height / 2;
+    final paint = Paint()
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = _stroke
+      ..strokeCap = StrokeCap.round;
+
+    canvas.drawRRect(
+      RRect.fromRectAndRadius(rect, Radius.circular(r)),
+      paint..color = color.withValues(alpha: 0.18 * opacity),
+    );
+    if (progress == 0) return;
+
+    final left = Rect.fromCircle(
+      center: Offset(rect.left + r, rect.center.dy),
+      radius: r,
+    );
+    final right = Rect.fromCircle(
+      center: Offset(rect.right - r, rect.center.dy),
+      radius: r,
+    );
+    final start = Offset(rect.left, rect.center.dy);
+    final top = Path()
+      ..moveTo(start.dx, start.dy)
+      ..arcTo(left, math.pi, math.pi / 2, false)
+      ..lineTo(rect.right - r, rect.top)
+      ..arcTo(right, -math.pi / 2, math.pi / 2, false);
+    final bottom = Path()
+      ..moveTo(start.dx, start.dy)
+      ..arcTo(left, math.pi, -math.pi / 2, false)
+      ..lineTo(rect.right - r, rect.bottom)
+      ..arcTo(right, math.pi / 2, -math.pi / 2, false);
+
+    paint.color = color.withValues(alpha: opacity);
+    for (final half in [top, bottom]) {
+      for (final metric in half.computeMetrics()) {
+        canvas.drawPath(metric.extractPath(0, metric.length * progress), paint);
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(_TrackProgressPainter oldDelegate) =>
+      oldDelegate.progress != progress ||
+      oldDelegate.color != color ||
+      oldDelegate.opacity != opacity;
 }
 
 class _RingPainter extends CustomPainter {

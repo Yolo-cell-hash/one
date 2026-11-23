@@ -6,12 +6,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:provider/provider.dart';
 
+import 'package:godrej_one_sdk/models/photo.dart';
 import 'package:godrej_one_sdk/models/property.dart';
 import 'package:godrej_one_sdk/models/space.dart';
 import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
+import 'package:godrej_one_sdk/providers/profile_store.dart';
 import 'package:godrej_one_sdk/screens/home_shell.dart';
+import 'package:godrej_one_sdk/screens/property_screen.dart';
 import 'package:godrej_one_sdk/service/show_elegant_toast.dart';
-import 'package:godrej_one_sdk/service/user_name_onboarding_handler.dart';
 import 'package:godrej_one_sdk/widgets/landing_properties_panel.dart';
 import 'package:godrej_one_sdk/widgets/landing_top_content.dart';
 import 'package:godrej_one_sdk/widgets/landing_unlock_slider.dart';
@@ -59,9 +61,6 @@ class LandingPage extends StatefulWidget {
 
 class _LandingPageState extends State<LandingPage>
     with TickerProviderStateMixin {
-  static const _users = UserNameOnboardingHandler.users;
-  static const _properties = Property.all;
-
   late final AnimationController _launch = AnimationController(
     vsync: this,
     duration: _launchDuration,
@@ -87,8 +86,6 @@ class _LandingPageState extends State<LandingPage>
   final _avatarKey = GlobalKey();
   bool _imagesCached = false;
 
-  int _selected = 0;
-  int _property = 0;
   bool _propertiesOpen = false;
   bool _shellOpen = false;
   Rect? _flightStart;
@@ -96,17 +93,27 @@ class _LandingPageState extends State<LandingPage>
 
   bool get _launching => _flightStart != null;
 
+  /// The property list the images were last decoded for.
+  List<Property>? _cachedFor;
+
+  /// Decodes the property photos ahead of time, so nothing pops in blank
+  /// the first time it's shown — again whenever the list changes (restored
+  /// on launch, or edited in Profile).
+  void _precacheProperties(List<Property> properties) {
+    if (identical(properties, _cachedFor)) return;
+    _cachedFor = properties;
+    for (final property in properties) {
+      precacheImage(property.backgroundImage, context, onError: (_, _) {});
+      precacheImage(property.frostedImage, context, onError: (_, _) {});
+      precacheImage(property.thumbnailImage, context, onError: (_, _) {});
+    }
+  }
+
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
     if (_imagesCached) return;
     _imagesCached = true;
-    // Decoded ahead of time so nothing pops in blank the first time it's shown.
-    for (final property in _properties) {
-      precacheImage(property.backgroundImage, context);
-      precacheImage(property.frostedImage, context);
-      precacheImage(property.thumbnailImage, context);
-    }
     precacheImage(
       const AssetImage('images/home_screen_bg.png', package: 'godrej_one_sdk'),
       context,
@@ -140,7 +147,7 @@ class _LandingPageState extends State<LandingPage>
   void _toggleProperties() => _setPropertiesOpen(!_propertiesOpen);
 
   void _selectProperty(int index) {
-    _property = index;
+    context.read<ProfileStore>().selectProperty(index);
     _setPropertiesOpen(false);
   }
 
@@ -165,24 +172,26 @@ class _LandingPageState extends State<LandingPage>
     _openHome(openVdb: true);
   }
 
-  void _openHome({bool openVdb = false}) async {
+  /// Straight to Profile, skipping the welcome animation. Back from it goes
+  /// to Home, then here.
+  void _openProfile() {
+    if (_launching || _shellOpen) return;
+    _openHome(tab: 'profile');
+  }
+
+  void _openHome({bool openVdb = false, String tab = 'home'}) async {
     if (!mounted) return;
     _shellOpen = true;
 
-    final launchedIndex = _selected; // preserve chosen user
-
     // The selected tab lives in an app-wide provider, so it would otherwise
-    // survive leaving the shell — always come back in on Home.
-    context.read<BottomBarProvider>().selectById('home');
+    // survive leaving the shell — always come back in on Home (or the page
+    // asked for).
+    context.read<BottomBarProvider>().selectById(tab);
 
     await Navigator.of(context).push(
       PageRouteBuilder(
         transitionDuration: const Duration(milliseconds: 600),
-        pageBuilder: (_, _, _) => HomeShell(
-          name: _users[launchedIndex].name,
-          asset: _users[launchedIndex].image,
-          openVdbOnStart: openVdb,
-        ),
+        pageBuilder: (_, _, _) => HomeShell(openVdbOnStart: openVdb),
         transitionsBuilder: (_, animation, _, child) =>
             FadeTransition(opacity: animation, child: child),
       ),
@@ -231,8 +240,12 @@ class _LandingPageState extends State<LandingPage>
                           children: [...previous, ?current],
                         ),
                         child: _PropertyPhoto(
-                          key: ValueKey(_property),
-                          property: _properties[_property],
+                          // A new object when it's edited in Profile, so a
+                          // changed photo cross-fades in too.
+                          key: ObjectKey(
+                            context.watch<ProfileStore>().property,
+                          ),
+                          property: context.watch<ProfileStore>().property,
                           frost: _sheetCurve,
                         ),
                       ),
@@ -256,6 +269,8 @@ class _LandingPageState extends State<LandingPage>
   }
 
   Widget _landing() {
+    final store = context.watch<ProfileStore>();
+    _precacheProperties(store.properties);
     return Stack(
       children: [
         Positioned(
@@ -263,13 +278,11 @@ class _LandingPageState extends State<LandingPage>
           left: 16,
           right: 16,
           child: LandingTopContent(
-            user: _users[_selected],
+            user: store.user,
             avatarKey: _avatarKey,
-            locality: _properties[_property].locality,
+            locality: store.property.locality,
             propertiesOpen: _propertiesOpen,
-            // The card shows one resident; tapping moves on to the next.
-            onAvatarTap: () =>
-                setState(() => _selected = (_selected + 1) % _users.length),
+            onAvatarTap: _openProfile,
             onPropertyTap: _toggleProperties,
           ),
         ),
@@ -325,12 +338,16 @@ class _LandingPageState extends State<LandingPage>
                         scale: _panelScale.animate(_sheetCurve),
                         alignment: const Alignment(0.85, -1),
                         child: LandingPropertiesPanel(
-                          properties: _properties,
-                          selectedIndex: _property,
+                          properties: context.watch<ProfileStore>().properties,
+                          selectedIndex: context
+                              .watch<ProfileStore>()
+                              .propertyIndex,
                           onSelect: _selectProperty,
-                          onAddProperty: () => showElegantToast(
-                            context,
-                            'Adding properties coming soon',
+                          onClose: () => _setPropertiesOpen(false),
+                          onAddProperty: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const PropertyScreen(),
+                            ),
                           ),
                         ),
                       ),
@@ -435,11 +452,8 @@ class _LandingPageState extends State<LandingPage>
           child: Opacity(
             opacity: 1 - _seg(0.40, 0.62, Curves.easeIn),
             child: UserCircleAvatarOnboarding(
-              name: _users[_selected].name,
-              image: AssetImage(
-                _users[_selected].image,
-                package: 'godrej_one_sdk',
-              ),
+              name: context.read<ProfileStore>().user.name,
+              image: photoImage(context.read<ProfileStore>().user.image),
               selected: true,
               radius: diameter / 2,
             ),
@@ -489,7 +503,7 @@ class _LandingPageState extends State<LandingPage>
                     progress: nameIn,
                     travel: 16,
                     child: Text(
-                      _users[_selected].name,
+                      context.read<ProfileStore>().user.name,
                       style: _welcomeNameStyle,
                     ),
                   ),
@@ -555,7 +569,7 @@ class _GlassRoundButton extends StatelessWidget {
             gradient: const LinearGradient(
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
-              colors: [Color(0xFFEDEBEA), Color(0xFFDEDAD8), Color(0xFFF0E9E3)],
+              colors: [Color(0xFFF3F1F0), Color(0xFFE6E2E0), Color(0xFFF4EEE9)],
             ),
             border: Border.all(color: Colors.white.withValues(alpha: 0.7)),
           ),

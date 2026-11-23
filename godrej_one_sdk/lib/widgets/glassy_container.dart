@@ -42,6 +42,9 @@ class BottomBarItem {
     this.size,
     this.tooltip,
     this.onTap,
+    this.onLongPress,
+    this.longPressHint,
+    this.label,
   });
 
   /// An item backed by an [IconData], e.g. `Icons.home_filled`.
@@ -52,6 +55,9 @@ class BottomBarItem {
     double? size,
     String? tooltip,
     VoidCallback? onTap,
+    VoidCallback? onLongPress,
+    String? longPressHint,
+    String? label,
   }) : this._(
          id: id,
          iconData: icon,
@@ -59,6 +65,9 @@ class BottomBarItem {
          size: size,
          tooltip: tooltip,
          onTap: onTap,
+         onLongPress: onLongPress,
+         longPressHint: longPressHint,
+         label: label,
        );
 
   /// An item backed by an asset. `.svg` files are rendered with
@@ -74,6 +83,9 @@ class BottomBarItem {
     double? size,
     String? tooltip,
     VoidCallback? onTap,
+    VoidCallback? onLongPress,
+    String? longPressHint,
+    String? label,
   }) : this._(
          id: id,
          assetPath: assetPath,
@@ -82,6 +94,9 @@ class BottomBarItem {
          size: size,
          tooltip: tooltip,
          onTap: onTap,
+         onLongPress: onLongPress,
+         longPressHint: longPressHint,
+         label: label,
        );
 
   final IconData? iconData;
@@ -94,8 +109,17 @@ class BottomBarItem {
   /// Overrides the bar's default icon size.
   final double? size;
 
+  /// Shown on long press — so an item with [onLongPress] should leave it
+  /// null, or the tooltip would take the gesture.
   final String? tooltip;
   final VoidCallback? onTap;
+  final VoidCallback? onLongPress;
+
+  /// What [onLongPress] does, for screen readers — e.g. "Customize".
+  final String? longPressHint;
+
+  /// Screen-reader name, for an item without a [tooltip].
+  final String? label;
   final String id;
 
   bool get isSvg =>
@@ -342,8 +366,11 @@ class GlassyContainer extends StatelessWidget {
                   child: GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onTap: bottomBarItems[i].onTap,
+                    onLongPress: bottomBarItems[i].onLongPress,
                     child: Semantics(
                       button: true,
+                      label: bottomBarItems[i].label,
+                      onLongPressHint: bottomBarItems[i].longPressHint,
                       selected: i == bottomBarSelectedIndex,
                       child: Center(
                         child: _buildBottomBarItem(

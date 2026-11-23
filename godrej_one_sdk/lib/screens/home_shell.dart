@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
 import 'package:godrej_one_sdk/screens/activity_trails_screen.dart';
 import 'package:godrej_one_sdk/screens/add_devices_screen.dart';
+import 'package:godrej_one_sdk/screens/assistant_screen.dart';
 import 'package:godrej_one_sdk/screens/customize_screen.dart';
 import 'package:godrej_one_sdk/screens/home_screen.dart';
 import 'package:godrej_one_sdk/screens/my_spaces_screen.dart';
+import 'package:godrej_one_sdk/screens/account/profile_screen.dart';
 import 'package:godrej_one_sdk/widgets/glassy_container.dart';
 import 'package:godrej_one_sdk/widgets/tab_navigator.dart';
 import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
@@ -21,15 +24,7 @@ import 'package:godrej_one_sdk/providers/bottom_bar_provider.dart';
 /// {id, icon, tooltip} in the app; nothing here can drift out of sync with
 /// it.
 class HomeShell extends StatefulWidget {
-  const HomeShell({
-    super.key,
-    required this.name,
-    required this.asset,
-    this.openVdbOnStart = false,
-  });
-
-  final String name;
-  final String asset;
+  const HomeShell({super.key, this.openVdbOnStart = false});
 
   /// Opens the Video Door Bell over the Home tab on arrival.
   final bool openVdbOnStart;
@@ -47,16 +42,14 @@ class _HomeShellState extends State<HomeShell> {
     _tabs = [
       TabNavigator(
         tabId: 'home',
-        root: HomeScreen(
-          name: widget.name,
-          asset: widget.asset,
-          openVdbOnStart: widget.openVdbOnStart,
-        ),
+        root: HomeScreen(openVdbOnStart: widget.openVdbOnStart),
       ),
       const ActivityTrailsScreen(),
       const AddDevicesScreen(),
-      MySpacesScreen(name: widget.name, asset: widget.asset),
+      const MySpacesScreen(),
+      const AssistantScreen(),
       const TabNavigator(tabId: 'customize', root: CustomizeScreen()),
+      const ProfileScreen(),
     ];
   }
 
@@ -67,27 +60,46 @@ class _HomeShellState extends State<HomeShell> {
   /// persistent chrome drawn once, behind the IndexedStack), so this is the
   /// switch for it. Index must line up with [BottomBarProvider.defaultItems].
   static const List<Color?> _tabBackgrounds = [
-    null, // Home
+    Colors.white, // Home — draws its own brand header
     Colors.white, // Activity Trails
     Colors.white, // Add Devices
     null, // My Spaces
+    Colors.white, // Gia
     Colors.white, // Customize
+    Colors.white, // Profile
   ];
 
-  BottomBarItem _toBarItem(BottomBarItemSpec spec, VoidCallback onTap) {
+  /// The bar shows five slots: the first four tabs, then a last slot that's
+  /// Gia — or Customize or Profile while one of those is open. Tapping it
+  /// opens Gia; long-pressing it opens Customize.
+  static const _lastSlot = 4;
+
+  BottomBarItem _toBarItem(
+    BottomBarItemSpec spec,
+    VoidCallback onTap, {
+    VoidCallback? onLongPress,
+  }) {
     final assetPath = spec.assetPath;
+    // A tooltip would take the long press for itself.
+    final tooltip = onLongPress == null ? spec.tooltip : null;
     return assetPath != null
         ? BottomBarItem.asset(
             spec.id,
             assetPath,
-            tooltip: spec.tooltip,
+            tooltip: tooltip,
             onTap: onTap,
+            onLongPress: onLongPress,
+            longPressHint: onLongPress == null ? null : 'Customize',
+            label: tooltip == null ? spec.tooltip : null,
           )
         : BottomBarItem.icon(
             spec.id,
             spec.icon!,
-            tooltip: spec.tooltip,
+            tooltip: tooltip,
             onTap: onTap,
+            onLongPress: onLongPress,
+            longPressHint: onLongPress == null ? null : 'Customize',
+            label: tooltip == null ? spec.tooltip : null,
           );
   }
 
@@ -103,6 +115,10 @@ class _HomeShellState extends State<HomeShell> {
     final barProvider = context.watch<BottomBarProvider>();
     final index = barProvider.selectedIndex;
     final tabBackground = _tabBackgrounds[index];
+    final slots = [
+      for (var i = 0; i < _lastSlot; i++) i,
+      index > _lastSlot ? index : _lastSlot,
+    ];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -137,13 +153,21 @@ class _HomeShellState extends State<HomeShell> {
                   // photo and a plain white page.
                   borderExists: true,
                   borderColor: Colors.black.withValues(alpha: 0.06),
-                  bottomBarSelectedIndex: index,
+                  bottomBarSelectedIndex: slots.indexOf(index),
                   bottomBarItems: [
-                    for (var i = 0; i < barProvider.items.length; i++)
+                    for (final i in slots.take(_lastSlot))
                       _toBarItem(
                         barProvider.items[i],
                         () => barProvider.select(i),
                       ),
+                    _toBarItem(
+                      barProvider.items[slots.last],
+                      () => barProvider.select(_lastSlot),
+                      onLongPress: () {
+                        HapticFeedback.mediumImpact();
+                        barProvider.selectById('customize');
+                      },
+                    ),
                   ],
                 ),
               ),

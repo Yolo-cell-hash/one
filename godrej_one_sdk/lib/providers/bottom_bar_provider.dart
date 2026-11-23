@@ -52,7 +52,16 @@ class BottomBarProvider extends ChangeNotifier {
       'images/svgs/spaces.svg',
       tooltip: 'My Spaces',
     ),
+    // The bar's last slot: tap for Gia, long-press for Customize. Customize
+    // and Profile take the slot over while they're open (see HomeShell).
+    BottomBarItemSpec.icon(
+      'assistant',
+      Icons.smart_toy_rounded,
+      tooltip: 'Gia, your Godrej ONE assistant',
+    ),
     BottomBarItemSpec.icon('customize', Icons.add, tooltip: 'Customize'),
+    // Opened from the resident's photo, not the bar.
+    BottomBarItemSpec.icon('profile', Icons.person_rounded, tooltip: 'Profile'),
   ];
 
   final List<BottomBarItemSpec> _items;

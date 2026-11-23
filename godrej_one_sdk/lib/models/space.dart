@@ -382,4 +382,29 @@ const List<Space> demoSpaces = [
       ),
     ],
   ),
+  Space(
+    id: 'back_door',
+    label: 'Back Door',
+    image: 'images/entrance.png',
+    devices: [
+      SpaceDevice(
+        name: 'GSL D1',
+        kind: DeviceKind.lock,
+        image: 'images/devices/gsl_d1.png',
+        imageAlignment: Alignment.bottomRight,
+        imageWidthFactor: 0.5,
+        imageHeightFactor: 0.95,
+        highlighted: true,
+        trailDeviceId: 'advantis_gsl_d1',
+        userCount: 4,
+      ),
+      SpaceDevice(
+        name: 'Eve Pro 4G Mini-PT',
+        kind: DeviceKind.camera,
+        image: 'images/devices/eve_pro_4g_mini_pt.png',
+        imageWidthFactor: 0.45,
+        imageHeightFactor: 0.9,
+      ),
+    ],
+  ),
 ];

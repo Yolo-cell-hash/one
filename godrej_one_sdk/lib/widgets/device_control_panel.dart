@@ -152,11 +152,13 @@ class DeviceControlPanel extends StatelessWidget {
   }
 
   /// "Main Door Lock" → "main door", for the unlock hint.
+  /// "Main Door Lock" → "main door"; a model name like "GSL D1" is kept
+  /// as written.
   static String _lockTarget(String name) {
     final lower = name.toLowerCase();
     return lower.endsWith(' lock')
         ? lower.substring(0, lower.length - 5)
-        : lower;
+        : name;
   }
 }
 

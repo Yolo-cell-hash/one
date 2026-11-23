@@ -1,21 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-/// Avatar, "Hey, name!" and a one-line subtitle, with [trailing] actions on
+import 'package:godrej_one_sdk/providers/profile_store.dart';
+import 'package:godrej_one_sdk/widgets/profile_widgets.dart';
+
+/// The resident's photo (tap for Profile), "Hey, name!" and a one-line subtitle, with [trailing] actions on
 /// the right — the top of the photo-backed pages (My Spaces and each
 /// space's own page).
 class GreetingHeader extends StatelessWidget {
   const GreetingHeader({
     super.key,
-    required this.name,
-    required this.asset,
     required this.subtitle,
     required this.trailing,
   });
 
-  final String name;
-
-  /// Avatar image.
-  final String asset;
   final String subtitle;
   final Widget trailing;
 
@@ -24,6 +22,7 @@ class GreetingHeader extends StatelessWidget {
     final media = MediaQuery.of(context);
     final w = media.size.width;
     final avatar = (w * 0.11).clamp(38.0, 48.0); // Responsive avatar sizing
+    final name = context.select<ProfileStore, String>((s) => s.user.name);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -34,15 +33,7 @@ class GreetingHeader extends StatelessWidget {
       ),
       child: Row(
         children: [
-          ClipOval(
-            child: Image.asset(
-              asset,
-              package: 'godrej_one_sdk',
-              width: avatar,
-              height: avatar,
-              fit: BoxFit.cover,
-            ),
-          ),
+          ProfileAvatar(size: avatar),
           SizedBox(width: w * 0.03),
           Expanded(
             child: Column(

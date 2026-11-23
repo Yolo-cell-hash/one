@@ -13,30 +13,20 @@ import 'package:godrej_one_sdk/widgets/tab_navigator.dart';
 /// The "My Spaces" tab: a grid of the home's rooms; tapping one opens its
 /// [SpaceDetailScreen] inside the tab.
 class MySpacesScreen extends StatelessWidget {
-  const MySpacesScreen({super.key, required this.name, required this.asset});
-
-  final String name, asset;
+  const MySpacesScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return TabNavigator(
-      tabId: 'my_space',
-      root: _SpacesGridPage(name: name, asset: asset),
-    );
+    return TabNavigator(tabId: 'my_space', root: const _SpacesGridPage());
   }
 }
 
 class _SpacesGridPage extends StatelessWidget {
-  const _SpacesGridPage({required this.name, required this.asset});
-
-  final String name, asset;
+  const _SpacesGridPage();
 
   void _openSpace(BuildContext context, Space space) {
     Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) =>
-            SpaceDetailScreen(space: space, name: name, asset: asset),
-      ),
+      MaterialPageRoute<void>(builder: (_) => SpaceDetailScreen(space: space)),
     );
   }
 
@@ -54,8 +44,6 @@ class _SpacesGridPage extends StatelessWidget {
       children: [
         // Fixed Top Navigation Header
         GreetingHeader(
-          name: name,
-          asset: asset,
           subtitle: 'Mumbai Home',
           trailing: HomeCameraWidgets(
             status: 1,
